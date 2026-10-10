@@ -25,11 +25,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#f8f9f5] text-[#1c2420]">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `try { const saved = localStorage.getItem('handover-appearance'); document.documentElement.dataset.theme = saved === 'dark' || (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; } catch { document.documentElement.dataset.theme = 'light'; }` }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <ToastProvider>
-          <Suspense fallback={<div className="h-16 w-full border-b border-[#e2e7e0]/80 bg-[#f8f9f5]/85" />}>
+          <Suspense fallback={<div className="h-20 w-full border-b border-[var(--border-card)] bg-background" />}>
             <Navigation />
           </Suspense>
           <div className="flex-1 flex flex-col">{children}</div>

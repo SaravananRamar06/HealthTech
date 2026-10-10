@@ -118,12 +118,12 @@ function ShareViewerContent({
     return (
       <main className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
         <div className="glass-panel flex flex-col items-center gap-4 rounded-3xl p-8 shadow-sm">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#ddf2e8] text-[#14382f]">
-            <Lock className="h-7 w-7 text-[#2b8a7e] animate-pulse" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--mint-100)] text-[color:var(--brand-ink)]">
+            <Lock className="h-7 w-7 text-[color:var(--teal-text)] animate-pulse" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-base font-bold text-[#14382f]">Zero-Knowledge Decryption</h2>
-            <p className="text-xs text-[#525d56]">
+            <h2 className="text-base font-bold text-[color:var(--brand-ink)]">Zero-Knowledge Decryption</h2>
+            <p className="text-[13px] text-[color:var(--muted-grey)]">
               Decrypting payload with AES-256-GCM locally inside your browser...
             </p>
           </div>
@@ -145,14 +145,14 @@ function ShareViewerContent({
           </div>
 
           <div className="space-y-1.5">
-            <h1 className="text-xl font-extrabold text-[#14382f]">
+            <h1 className="text-xl font-extrabold text-[color:var(--brand-ink)]">
               {error === 'revoked' && 'Access Revoked'}
               {error === 'expired-or-missing' && 'Share Expired or Missing'}
               {error === 'missing-key' && 'Incomplete Share Link'}
               {error === 'corrupted' && 'Decryption Failed'}
               {error === 'network' && 'Connection Error'}
             </h1>
-            <p className="text-xs text-[#525d56] leading-relaxed">
+            <p className="text-[13px] text-[color:var(--muted-grey)] leading-relaxed">
               {error === 'revoked' &&
                 'The patient has explicitly revoked access to this summary. The ciphertext has been permanently purged from our servers.'}
               {error === 'expired-or-missing' &&
@@ -169,7 +169,7 @@ function ShareViewerContent({
           <div className="pt-2">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#14382f] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#1a473c] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--forest-800)] px-5 py-2.5 text-[13px] font-bold text-white shadow-xs hover:bg-[var(--forest-700)] transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Return Home</span>
@@ -196,8 +196,8 @@ export default function ShareViewerPage({
     <Suspense
       fallback={
         <main className="flex min-h-[70vh] flex-col items-center justify-center p-4">
-          <div className="flex items-center gap-3 text-[#525d56]">
-            <Loader2 className="h-6 w-6 animate-spin text-[#14382f]" />
+          <div className="flex items-center gap-3 text-[color:var(--muted-grey)]">
+            <Loader2 className="h-6 w-6 animate-spin text-[color:var(--brand-ink)]" />
             <p className="text-sm font-semibold">Loading clinical brief...</p>
           </div>
         </main>

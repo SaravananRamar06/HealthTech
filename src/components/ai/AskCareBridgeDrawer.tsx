@@ -1,5 +1,7 @@
 'use client';
 
+import { DialogFocus } from '@/components/ui/DialogFocus';
+
 import { useState, useRef, useEffect } from 'react';
 import type { PatientRecord, AIChatMessage } from '@/lib/types';
 import {
@@ -60,7 +62,7 @@ export function AskCareBridgeDrawer({
     {
       id: 'welcome',
       role: 'assistant',
-      content: `Hello! I am your **CareBridge Assistant**. I can answer questions strictly using the clinical records and documents in your health vault.\n\nAsk me about your medications, recent lab trends, recorded allergies, or care events below.`,
+      content: `Hello! I am your **Handover assistant**. I can answer questions strictly using the clinical records and documents in your health vault.\n\nAsk me about your medications, recent lab trends, recorded allergies, or care events below.`,
       timestamp: 'Just now',
     },
   ]);
@@ -180,40 +182,41 @@ export function AskCareBridgeDrawer({
       role="dialog"
       aria-modal="true"
       aria-labelledby="ask-carebridge-title"
-      className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
+      className="modal-backdrop fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
     >
-      <div className="flex h-full w-full max-w-xl flex-col bg-[#f8f9f5] shadow-2xl border-l border-[#d6ded5] animate-in slide-in-from-right duration-300">
+      <DialogFocus onClose={onClose} />
+      <div className="assistant-sheet flex h-full w-full max-w-xl flex-col bg-[var(--background)] shadow-2xl border-l border-[var(--border-card)] animate-in slide-in-from-right duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#e2e7e0] bg-white px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--border-card)] bg-white px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#14382f] text-[#3eb4a4] shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--forest-800)] text-[#8ccab5] shadow-xs">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 id="ask-carebridge-title" className="text-base font-bold tracking-tight text-[#14382f]">
-                  Ask CareBridge
+                <h2 id="ask-carebridge-title" className="text-base font-bold tracking-tight text-[color:var(--brand-ink)]">
+                  Ask Handover
                 </h2>
                 <button
                   type="button"
                   onClick={onOpenConsent}
-                  className="inline-flex items-center gap-1 rounded-md bg-[#ddf2e8] px-2 py-0.5 text-[10px] font-bold text-[#14382f] hover:bg-[#ccebe0] transition-colors"
+                  className="inline-flex items-center gap-1 rounded-md bg-[var(--mint-100)] px-2 py-0.5 text-[12px] font-bold text-[color:var(--brand-ink)] hover:bg-[var(--mint-100)] transition-colors"
                   title="Configure AI Privacy Mode"
                 >
                   {aiMode === 'gemini' ? (
                     <>
-                      <Cloud className="h-3 w-3 text-[#2b8a7e]" />
+                      <Cloud className="h-3 w-3 text-[color:var(--teal-text)]" />
                       <span>Gemini AI</span>
                     </>
                   ) : (
                     <>
-                      <Cpu className="h-3 w-3 text-[#2b8a7e]" />
+                      <Cpu className="h-3 w-3 text-[color:var(--teal-text)]" />
                       <span>Local Mode</span>
                     </>
                   )}
                 </button>
               </div>
-              <p className="text-[11px] text-[#6e7771]">Grounded answers with exact document citations</p>
+              <p className="text-[12px] text-[color:var(--muted-grey)]">Grounded answers with exact document citations</p>
             </div>
           </div>
 
@@ -221,7 +224,7 @@ export function AskCareBridgeDrawer({
             <button
               type="button"
               onClick={handleReset}
-              className="rounded-lg p-2 text-[#6e7771] hover:bg-[#f1f4ee] hover:text-[#14382f] transition-colors"
+              className="rounded-lg p-2 text-[color:var(--muted-grey)] hover:bg-[var(--surface-muted)] hover:text-[color:var(--brand-ink)] transition-colors"
               title="Reset Conversation"
             >
               <RotateCcw className="h-4 w-4" />
@@ -230,7 +233,7 @@ export function AskCareBridgeDrawer({
               type="button"
               onClick={onClose}
               aria-label="Close Assistant"
-              className="rounded-lg p-2 text-[#6e7771] hover:bg-[#f1f4ee] hover:text-[#14382f] transition-colors"
+              className="rounded-lg p-2 text-[color:var(--muted-grey)] hover:bg-[var(--surface-muted)] hover:text-[color:var(--brand-ink)] transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -249,17 +252,17 @@ export function AskCareBridgeDrawer({
                 <div
                   className={`max-w-[90%] rounded-2xl p-4 text-xs leading-relaxed shadow-2xs ${
                     isUser
-                      ? 'bg-[#14382f] text-[#ddf2e8]'
-                      : 'bg-white text-[#1c2420] border border-[#e2e7e0]'
+                      ? 'bg-[var(--forest-800)] text-[#e4eee5]'
+                      : 'bg-white text-[color:var(--brand-ink)] border border-[var(--border-card)]'
                   }`}
                 >
                   <div className="whitespace-pre-wrap">{msg.content}</div>
 
                   {/* Grounded Citation Cards */}
                   {msg.citations && msg.citations.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[#e2e7e0] space-y-2">
-                      <p className="text-[11px] font-bold text-[#14382f] uppercase tracking-wider flex items-center gap-1">
-                        <FileText className="h-3.5 w-3.5 text-[#2b8a7e]" />
+                    <div className="mt-3 pt-3 border-t border-[var(--border-card)] space-y-2">
+                      <p className="text-[12px] font-bold text-[color:var(--brand-ink)] uppercase tracking-wider flex items-center gap-1">
+                        <FileText className="h-3.5 w-3.5 text-[color:var(--teal-text)]" />
                         <span>Supporting Sources ({msg.citations.length}):</span>
                       </p>
                       <div className="space-y-1.5">
@@ -268,16 +271,16 @@ export function AskCareBridgeDrawer({
                           return (
                             <div
                               key={c.id}
-                              className="rounded-xl border border-[#d6ded5] bg-[#f8f9f5] p-2.5 text-[11px] space-y-1 hover:border-[#2b8a7e] transition-colors"
+                              className="rounded-xl border border-[var(--border-card)] bg-[var(--background)] p-2.5 text-[12px] space-y-1 hover:border-[var(--teal-text)] transition-colors"
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold text-[#14382f] truncate">
+                                <span className="font-semibold text-[color:var(--brand-ink)] truncate">
                                   {c.title}
                                 </span>
                                 <span
                                   className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
                                     c.provenanceKind === 'document'
-                                      ? 'bg-[#ddf2e8] text-[#14382f]'
+                                      ? 'bg-[var(--mint-100)] text-[color:var(--brand-ink)]'
                                       : 'bg-amber-100 text-amber-900'
                                   }`}
                                 >
@@ -286,7 +289,7 @@ export function AskCareBridgeDrawer({
                               </div>
 
                               {c.date && (
-                                <p className="text-[#6e7771] text-[10px]">Date: {c.date}</p>
+                                <p className="text-[color:var(--muted-grey)] text-[12px]">Date: {c.date}</p>
                               )}
 
                               {c.excerpt && (
@@ -294,7 +297,7 @@ export function AskCareBridgeDrawer({
                                   <button
                                     type="button"
                                     onClick={() => toggleExcerpt(c.id)}
-                                    className="flex items-center gap-1 text-[10px] font-semibold text-[#2b8a7e] hover:underline"
+                                    className="flex items-center gap-1 text-[12px] font-semibold text-[color:var(--teal-text)] hover:underline"
                                   >
                                     <span>{isExpanded ? 'Hide verbatim excerpt' : 'View verbatim excerpt'}</span>
                                     {isExpanded ? (
@@ -304,7 +307,7 @@ export function AskCareBridgeDrawer({
                                     )}
                                   </button>
                                   {isExpanded && (
-                                    <div className="mt-1.5 rounded-lg border-l-2 border-[#2b8a7e] bg-white p-2 text-[10px] text-[#3b4c44] italic">
+                                    <div className="mt-1.5 rounded-lg border-l-2 border-[var(--teal-text)] bg-white p-2 text-[12px] text-[color:var(--brand-ink)] italic">
                                       &ldquo;{c.excerpt}&rdquo;
                                     </div>
                                   )}
@@ -319,7 +322,7 @@ export function AskCareBridgeDrawer({
 
                   {/* Uncertainty / Warning Callout */}
                   {msg.uncertainty && (
-                    <div className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-amber-50 p-2 text-[11px] text-amber-900 border border-amber-200">
+                    <div className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-amber-50 p-2 text-[12px] text-amber-900 border border-amber-200">
                       <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-700" />
                       <span>Evidence is partial, unverified, or not documented in your records.</span>
                     </div>
@@ -327,12 +330,12 @@ export function AskCareBridgeDrawer({
 
                   {/* Action row */}
                   {!isUser && (
-                    <div className="mt-2 flex items-center justify-between text-[10px] text-[#6e7771] pt-1">
+                    <div className="mt-2 flex items-center justify-between text-[12px] text-[color:var(--muted-grey)] pt-1">
                       <span>{msg.timestamp}</span>
                       <button
                         type="button"
                         onClick={() => handleCopy(msg.content, msg.id)}
-                        className="inline-flex items-center gap-1 hover:text-[#14382f] transition-colors"
+                        className="inline-flex items-center gap-1 hover:text-[color:var(--brand-ink)] transition-colors"
                       >
                         {copiedId === msg.id ? (
                           <>
@@ -354,9 +357,9 @@ export function AskCareBridgeDrawer({
           })}
 
           {isLoading && (
-            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-[#e2e7e0] shadow-2xs max-w-[80%] text-xs text-[#525d56]">
-              <Loader2 className="h-4 w-4 animate-spin text-[#2b8a7e]" />
-              <span>CareBridge is reviewing your records...</span>
+            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-[var(--border-card)] shadow-2xs max-w-[80%] text-[13px] text-[color:var(--muted-grey)]">
+              <Loader2 className="h-4 w-4 animate-spin text-[color:var(--teal-text)]" />
+              <span>Reviewing your records...</span>
             </div>
           )}
 
@@ -364,8 +367,8 @@ export function AskCareBridgeDrawer({
         </div>
 
         {/* Suggested Question Chips */}
-        <div className="border-t border-[#e2e7e0] bg-white p-3">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e7771] mb-2">
+        <div className="border-t border-[var(--border-card)] bg-white p-3">
+          <p className="text-[12px] font-bold uppercase tracking-wider text-[color:var(--muted-grey)] mb-2">
             Suggested Questions:
           </p>
           <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
@@ -375,7 +378,7 @@ export function AskCareBridgeDrawer({
                 type="button"
                 onClick={() => handleSend(q)}
                 disabled={isLoading}
-                className="rounded-lg border border-[#d6ded5] bg-[#f8f9f5] px-2.5 py-1 text-[11px] font-medium text-[#14382f] hover:bg-[#ddf2e8] hover:border-[#2b8a7e] disabled:opacity-50 transition-all text-left truncate max-w-full"
+                className="rounded-lg border border-[var(--border-card)] bg-[var(--background)] px-2.5 py-1 text-[12px] font-medium text-[color:var(--brand-ink)] hover:bg-[var(--mint-100)] hover:border-[var(--teal-text)] disabled:opacity-50 transition-colors text-left truncate max-w-full"
               >
                 {q}
               </button>
@@ -384,7 +387,7 @@ export function AskCareBridgeDrawer({
         </div>
 
         {/* Query Input Box */}
-        <div className="border-t border-[#e2e7e0] bg-white p-4">
+        <div className="border-t border-[var(--border-card)] bg-white p-4">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -397,18 +400,20 @@ export function AskCareBridgeDrawer({
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               placeholder="Ask a question about your health records..."
+              aria-label="Question about your health records"
               disabled={isLoading}
-              className="flex-1 rounded-xl border border-[#d6ded5] bg-[#f8f9f5] px-3.5 py-2.5 text-xs text-[#1c2420] placeholder-[#6e7771] focus:border-[#2b8a7e] focus:bg-white focus:outline-hidden"
+              className="flex-1 rounded-xl border border-[var(--border-card)] bg-[var(--background)] px-3.5 py-2.5 text-[13px] text-[color:var(--brand-ink)] placeholder-[#626e65] focus:border-[var(--teal-text)] focus:bg-white focus:outline-hidden"
             />
             <button
               type="submit"
+              aria-label="Send question"
               disabled={!inputQuery.trim() || isLoading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#14382f] text-white shadow-xs hover:bg-[#1a473c] disabled:opacity-40 transition-all"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--forest-800)] text-white shadow-xs hover:bg-[var(--forest-700)] disabled:opacity-40 transition-colors"
             >
-              <Send className="h-4 w-4 text-[#3eb4a4]" />
+              <Send className="h-4 w-4 text-[#8ccab5]" />
             </button>
           </form>
-          <p className="text-[10px] text-[#6e7771] text-center mt-2">
+          <p className="text-[12px] text-[color:var(--muted-grey)] text-center mt-2">
             Answers are grounded solely in uploaded records. Not a diagnosis or clinical recommendation.
           </p>
         </div>

@@ -49,22 +49,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             aria-live="polite"
             className={`pointer-events-auto flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-lg backdrop-blur-md transition-all duration-300 animate-slide-up text-xs font-medium ${
               t.type === 'success'
-                ? 'border-[#b8decb] bg-[#eef8f4]/95 text-[#14382f]'
+                ? 'border-[var(--border-strong)] bg-[var(--surface-muted)]/95 text-[color:var(--brand-ink)]'
                 : t.type === 'error'
                 ? 'border-rose-200 bg-rose-50/95 text-rose-950'
-                : 'border-[#d6ded5] bg-white/95 text-[#1c2420]'
+                : 'border-[var(--border-card)] bg-white/95 text-[color:var(--brand-ink)]'
             }`}
           >
             <div className="flex items-center gap-2.5">
-              {t.type === 'success' && <CheckCircle2 className="h-4 w-4 text-[#2b8a7e] shrink-0" />}
+              {t.type === 'success' && <CheckCircle2 className="h-4 w-4 text-[color:var(--teal-text)] shrink-0" />}
               {t.type === 'error' && <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />}
-              {t.type === 'info' && <Info className="h-4 w-4 text-[#2b8a7e] shrink-0" />}
+              {t.type === 'info' && <Info className="h-4 w-4 text-[color:var(--teal-text)] shrink-0" />}
               <span>{t.message}</span>
             </div>
             <button
               type="button"
               onClick={() => removeToast(t.id)}
-              className="text-[#6e7771] hover:text-[#1c2420] transition-colors p-0.5 rounded-md hover:bg-black/5"
+              className="text-[color:var(--muted-grey)] hover:text-[color:var(--brand-ink)] transition-colors p-0.5 rounded-md hover:bg-black/5"
               aria-label="Dismiss notification"
             >
               <X className="h-3.5 w-3.5" />

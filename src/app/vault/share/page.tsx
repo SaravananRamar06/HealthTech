@@ -5,6 +5,7 @@
 
 import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { WorkflowStrip } from '@/components/ui/WorkflowStrip';
 import { QRCodeSVG } from 'qrcode.react';
 import { useVault } from '@/lib/vault';
 import { useIsMounted } from '@/lib/useIsMounted';
@@ -106,8 +107,8 @@ export default function SharePage() {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-5xl items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#14382f] border-t-transparent" />
-          <p className="text-sm font-medium text-[#525d56]">Loading share studio...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--forest-800)] border-t-transparent" />
+          <p className="text-sm font-medium text-[color:var(--muted-grey)]">Loading share studio...</p>
         </div>
       </main>
     );
@@ -280,27 +281,27 @@ export default function SharePage() {
   ] : [];
 
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6">
+    <main className="app-shell space-y-7">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <Link
               href="/vault"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#525d56] hover:text-[#14382f] transition-colors"
+              className="inline-flex items-center gap-1 text-[13px] font-semibold text-[color:var(--muted-grey)] hover:text-[color:var(--brand-ink)] transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Return to Vault</span>
             </Link>
-            <span className="text-[#ccebe0]">/</span>
-            <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
+            <span className="text-[#d3e8dc]">/</span>
+            <span className="rounded-md bg-[var(--mint-100)] px-2 py-0.5 text-[13px] font-bold text-[color:var(--brand-ink)]">
               CLIENT-SIDE ENCRYPTION
             </span>
           </div>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14382f]">
-            Share Health Brief
+          <h1 className="page-title mt-3 text-[color:var(--brand-ink)]">
+            A thoughtful handover.
           </h1>
-          <p className="text-xs text-[#525d56] mt-0.5">
+          <p className="text-[13px] text-[color:var(--muted-grey)] mt-0.5">
             Encrypted with AES-256-GCM in your browser. The server receives only ciphertext and never sees the key.
           </p>
         </div>
@@ -309,39 +310,40 @@ export default function SharePage() {
           <button
             type="button"
             onClick={() => loadDemo('complete')}
-            className="rounded-xl bg-[#14382f] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#1a473c] transition-colors"
+            className="rounded-xl bg-[var(--forest-800)] px-4 py-2 text-[13px] font-bold text-white shadow-xs hover:bg-[var(--forest-700)] transition-colors"
           >
             Load Demo Patient
           </button>
         )}
       </div>
 
+      <WorkflowStrip current="share" />
       {/* Two Column Layout: Wizard + Live Clinician Preview */}
       <div className="grid gap-6 lg:grid-cols-12 items-start">
         {/* Left Column: Share Creator Wizard */}
-        <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-5 lg:col-span-7">
-          <h2 className="text-base font-bold text-[#14382f] flex items-center gap-2">
-            <Lock className="h-4 w-4 text-[#2b8a7e]" />
+        <section className="glass-panel record-section rounded-2xl p-6 shadow-xs space-y-5 lg:col-span-7">
+          <h2 className="text-base font-bold text-[color:var(--brand-ink)] flex items-center gap-2">
+            <Lock className="h-4 w-4 text-[color:var(--teal-text)]" />
             <span>Configure Scoped Share</span>
           </h2>
 
           {/* 1. Recipient & Expiry */}
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-[#14382f] block mb-1">
+              <label htmlFor="share-page-field-1" className="text-[13px] font-bold text-[color:var(--brand-ink)] block mb-1">
                 Recipient Name or Clinician Label
               </label>
-              <input
+              <input id="share-page-field-1"
                 type="text"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
                 placeholder="e.g. Dr. S. Rao (Endocrinology)"
-                className="w-full rounded-xl border border-[#d6ded5] bg-white p-2.5 text-xs text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
+                className="w-full rounded-xl border border-[var(--border-card)] bg-white p-2.5 text-[13px] text-[color:var(--brand-ink)] focus:border-[var(--teal-text)] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[#14382f] block mb-1.5">
+              <label className="text-[13px] font-bold text-[color:var(--brand-ink)] block mb-1.5">
                 Link Expiry Duration
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -350,10 +352,11 @@ export default function SharePage() {
                     key={opt}
                     type="button"
                     onClick={() => setExpiryOption(opt)}
+                    aria-pressed={expiryOption === opt}
                     className={`rounded-xl py-2 text-xs font-bold border transition-all ${
                       expiryOption === opt
-                        ? 'border-[#14382f] bg-[#14382f] text-[#ddf2e8] shadow-xs'
-                        : 'border-[#d6ded5] bg-white text-[#525d56] hover:bg-[#f1f4ee]'
+                        ? 'border-[var(--forest-800)] bg-[var(--forest-800)] text-[#e4eee5] shadow-xs'
+                        : 'border-[var(--border-card)] bg-white text-[color:var(--muted-grey)] hover:bg-[var(--surface-muted)]'
                     }`}
                   >
                     {opt === '1h' ? '1 Hour' : opt === '24h' ? '24 Hours' : '7 Days'}
@@ -366,22 +369,22 @@ export default function SharePage() {
           {/* 2. Section Inclusions */}
           <div className="space-y-2 pt-2 border-t border-[#eef2ec]">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#14382f] block">
+              <label className="text-[13px] font-bold text-[color:var(--brand-ink)] block">
                 Sections to Include ({selectedSections.length} of 6)
               </label>
-              <div className="flex items-center gap-2 text-[11px]">
+              <div className="flex items-center gap-2 text-[12px]">
                 <button
                   type="button"
                   onClick={() => setSelectedSections(['allergies', 'medications', 'conditions', 'labs', 'events', 'emergencyContact'])}
-                  className="font-bold text-[#2b8a7e] hover:underline"
+                  className="font-bold text-[color:var(--teal-text)] hover:underline"
                 >
                   Select All
                 </button>
-                <span className="text-[#d6ded5]">·</span>
+                <span className="text-[#cdd4c8]">·</span>
                 <button
                   type="button"
                   onClick={() => setSelectedSections([])}
-                  className="text-[#6e7771] hover:text-[#1c2420] hover:underline"
+                  className="text-[color:var(--muted-grey)] hover:text-[color:var(--brand-ink)] hover:underline"
                 >
                   Clear Selection
                 </button>
@@ -402,10 +405,11 @@ export default function SharePage() {
                     key={sec.id}
                     type="button"
                     onClick={() => toggleSection(sec.id as ShareSection)}
+                    aria-pressed={active}
                     className={`rounded-xl px-3 py-1.5 text-xs font-bold border transition-all ${
                       active
-                        ? 'bg-[#14382f] border-[#14382f] text-white shadow-2xs'
-                        : 'bg-white border-[#d6ded5] text-[#6e7771] hover:bg-[#f1f4ee]'
+                        ? 'bg-[var(--forest-800)] border-[var(--forest-800)] text-white shadow-2xs'
+                        : 'bg-white border-[var(--border-card)] text-[color:var(--muted-grey)] hover:bg-[var(--surface-muted)]'
                     }`}
                   >
                     {active ? '✓ ' : '+ '}
@@ -420,16 +424,16 @@ export default function SharePage() {
           {currentRecord && (
             <div className="border-t border-[#eef2ec] pt-3 space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-[#14382f] block">
+                <label className="text-[13px] font-bold text-[color:var(--brand-ink)] block">
                   Withhold Specific Items (Optional)
                 </label>
-                <span className="text-[11px] font-mono text-[#6e7771]">
+                <span className="text-[12px] font-mono text-[color:var(--muted-grey)]">
                   {excludedIds.length} withheld
                 </span>
               </div>
 
               {hasExcludedMedicines && (
-                <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50/90 p-3 text-xs text-amber-950">
+                <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50/90 p-3 text-[13px] text-amber-950">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700 mt-0.5" />
                   <p className="leading-relaxed">
                     <strong>Clinical Safety Notice:</strong> You have withheld one or more medications. The clinician brief will clearly disclose that items were withheld.
@@ -437,26 +441,26 @@ export default function SharePage() {
                 </div>
               )}
 
-              <div className="max-h-44 overflow-y-auto space-y-1.5 rounded-xl border border-[#d6ded5] p-2 bg-[#f8f9f5]">
+              <div className="withholding-list max-h-44 overflow-y-auto space-y-1.5 rounded-xl border border-[var(--border-card)] p-2 bg-[var(--background)]">
                 {withholdingItems.map((m) => {
                   const isExcluded = excludedIds.includes(m.id);
                   return (
                     <label
                       key={m.id}
-                      className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-[#e2e7e0] text-xs cursor-pointer hover:bg-[#f1f4ee] transition-colors"
+                      className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-[var(--border-card)] text-[13px] cursor-pointer hover:bg-[var(--surface-muted)] transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
                           checked={isExcluded}
                           onChange={() => toggleExcludedId(m.id)}
-                          className="rounded border-[#d6ded5] text-rose-600 focus:ring-rose-500"
+                          className="rounded border-[var(--border-card)] text-rose-600 focus:ring-rose-500"
                         />
-                        <span className={isExcluded ? 'line-through text-[#859088]' : 'font-medium text-[#1c2420]'}>
+                        <span className={isExcluded ? 'line-through text-[color:var(--muted-grey)]' : 'font-medium text-[color:var(--brand-ink)]'}>
                           {m.label}
                         </span>
                       </div>
-                      <span className="text-[10px] text-[#6e7771] uppercase">{m.type}</span>
+                      <span className="text-[12px] text-[color:var(--muted-grey)] uppercase">{m.type}</span>
                     </label>
                   );
                 })}
@@ -469,9 +473,9 @@ export default function SharePage() {
             type="button"
             disabled={isEncrypting || !currentRecord}
             onClick={handleCreateShare}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#14382f] py-3.5 text-xs font-bold text-[#ddf2e8] shadow-sm hover:bg-[#1a473c] hover:shadow-md transition-all disabled:opacity-50"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--forest-800)] py-3.5 text-[13px] font-bold text-[#e4eee5] shadow-sm hover:bg-[var(--forest-700)] hover:shadow-md transition-colors disabled:opacity-50"
           >
-            <Lock className="h-4 w-4 text-[#3eb4a4]" />
+            <Lock className="h-4 w-4 text-[#8ccab5]" />
             <span>
               {isEncrypting ? 'Encrypting with AES-256-GCM...' : 'Encrypt & Generate Share Link'}
             </span>
@@ -479,26 +483,26 @@ export default function SharePage() {
         </section>
 
         {/* Right Column: Live Clinician View Preview (Sticky) */}
-        <section className="glass-panel rounded-2xl p-5 shadow-xs space-y-4 lg:col-span-5 lg:sticky lg:top-20">
+        <section className="glass-panel share-preview rounded-2xl p-5 shadow-xs space-y-4 lg:col-span-5 lg:sticky lg:top-24">
           <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
             <div className="flex items-center gap-2">
-              <Eye className="h-4 w-4 text-[#2b8a7e]" />
-              <span className="text-xs font-bold text-[#14382f] uppercase tracking-wider">
+              <Eye className="h-4 w-4 text-[color:var(--teal-text)]" />
+              <span className="text-[13px] font-bold text-[color:var(--brand-ink)] uppercase tracking-wider">
                 Live Brief Preview
               </span>
             </div>
-            <span className="text-[10px] rounded bg-[#ddf2e8] px-2 py-0.5 font-bold text-[#14382f]">
+            <span className="text-[12px] rounded bg-[var(--mint-100)] px-2 py-0.5 font-bold text-[color:var(--brand-ink)]">
               Recipient: {recipient.split(' ')[0] || 'Clinician'}
             </span>
           </div>
 
           {/* Mockup Frame */}
-          <div className="rounded-xl border border-[#d6ded5] bg-white p-4 space-y-3.5 text-xs shadow-2xs">
+          <div className="rounded-xl border border-[var(--border-card)] bg-white p-4 space-y-3.5 text-[13px] shadow-2xs">
             {/* Header info */}
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6e7771]">Patient</span>
-              <p className="font-extrabold text-sm text-[#14382f]">{currentRecord?.profile.name || 'Patient Name'}</p>
-              <p className="text-[11px] text-[#6e7771]">
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color:var(--muted-grey)]">Patient</span>
+              <p className="font-extrabold text-sm text-[color:var(--brand-ink)]">{currentRecord?.profile.name || 'Patient Name'}</p>
+              <p className="text-[12px] text-[color:var(--muted-grey)]">
                 DOB: {currentRecord?.profile.dateOfBirth} · {currentRecord?.profile.sex}
                 {selectedSections.includes('emergencyContact') && currentRecord?.profile.emergencyContact && (
                   <span> · Contact: {currentRecord.profile.emergencyContact.phone}</span>
@@ -508,18 +512,18 @@ export default function SharePage() {
 
             {/* Withheld notice */}
             {preview && preview.withheldCount > 0 && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900 font-medium">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-[12px] text-amber-900 font-medium">
                 ⚠️ {preview.withheldCount} item(s) withheld by patient from this summary.
               </div>
             )}
 
             {/* Sections realistic live preview */}
-            <div className="space-y-3 border-t border-[#f1f4ee] pt-3">
+            <div className="space-y-3 border-t border-[#eeeee6] pt-3">
               {/* Allergies live preview */}
               <div>
-                <div className="flex items-center justify-between text-[11px] font-bold text-[#14382f] mb-1">
+                <div className="flex items-center justify-between text-[12px] font-bold text-[color:var(--brand-ink)] mb-1">
                   <span>Allergies:</span>
-                  <span className="text-[10px] text-[#6e7771]">
+                  <span className="text-[12px] text-[color:var(--muted-grey)]">
                     {selectedSections.includes('allergies') ? 'Included' : 'Withheld'}
                   </span>
                 </div>
@@ -529,25 +533,25 @@ export default function SharePage() {
                       {preview.allergies.map((a) => (
                         <span
                           key={a.id}
-                          className="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-800 border border-rose-200"
+                          className="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-[12px] font-semibold text-rose-800 border border-rose-200"
                         >
                           ⚠️ {a.substance} {a.reaction ? `(${a.reaction})` : ''}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-[10px] text-[#6e7771] italic">{preview?.allergyStatus === 'none-known' ? 'No known allergies' : 'Allergy status unknown or withheld'}</span>
+                    <span className="text-[12px] text-[color:var(--muted-grey)] italic">{preview?.allergyStatus === 'none-known' ? 'No known allergies' : 'Allergy status unknown or withheld'}</span>
                   )
                 ) : (
-                  <span className="text-[10px] text-[#a0aaa3] italic">Allergies section excluded by patient</span>
+                  <span className="text-[12px] text-[color:var(--muted-grey)] italic">Allergies section excluded by patient</span>
                 )}
               </div>
 
               {/* Medications live preview */}
               <div>
-                <div className="flex items-center justify-between text-[11px] font-bold text-[#14382f] mb-1">
+                <div className="flex items-center justify-between text-[12px] font-bold text-[color:var(--brand-ink)] mb-1">
                   <span>Current Medications:</span>
-                  <span className="text-[10px] text-[#6e7771]">
+                  <span className="text-[12px] text-[color:var(--muted-grey)]">
                     {selectedSections.includes('medications') ? 'Included' : 'Withheld'}
                   </span>
                 </div>
@@ -558,33 +562,33 @@ export default function SharePage() {
                       .map((m) => (
                         <div
                           key={m.id}
-                          className="flex items-center justify-between rounded-md bg-[#f8f9f5] px-2 py-1 border border-[#e2e7e0] text-[10px]"
+                          className="flex items-center justify-between rounded-md bg-[var(--background)] px-2 py-1 border border-[var(--border-card)] text-[12px]"
                         >
-                          <span className="font-semibold text-[#14382f]">{m.name}</span>
-                          <span className="text-[#6e7771]">{m.dosage || m.strength || 'Active'}</span>
+                          <span className="font-semibold text-[color:var(--brand-ink)]">{m.name}</span>
+                          <span className="text-[color:var(--muted-grey)]">{m.dosage || m.strength || 'Active'}</span>
                         </div>
                       ))}
                     {currentRecord?.medications?.filter((m) => m.status === 'active' && !excludedIds.includes(m.id)).length === 0 && (
-                      <span className="text-[10px] text-[#6e7771] italic">No active medicines included</span>
+                      <span className="text-[12px] text-[color:var(--muted-grey)] italic">No active medicines included</span>
                     )}
                   </div>
                 ) : (
-                  <span className="text-[10px] text-[#a0aaa3] italic">Medications section excluded by patient</span>
+                  <span className="text-[12px] text-[color:var(--muted-grey)] italic">Medications section excluded by patient</span>
                 )}
               </div>
 
               {/* Lab trends live preview */}
               {selectedSections.includes('labs') && (
                 <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold text-[#14382f] mb-1">
+                  <div className="flex items-center justify-between text-[12px] font-bold text-[color:var(--brand-ink)] mb-1">
                     <span>Lab Results &amp; Trends:</span>
-                    <span className="text-[10px] text-[#2b8a7e]">Included</span>
+                    <span className="text-[12px] text-[color:var(--teal-text)]">Included</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                  <div className="grid grid-cols-2 gap-1.5 text-[12px]">
                     {preview?.labs.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4).map((lab) => (
-                      <div key={lab.id} className="rounded-md bg-[#eef8f4] p-1.5 border border-[#cbe2da]">
-                        <span className="text-[#6e7771] block">{lab.test} ({lab.date})</span>
-                        <strong className="text-[#14382f] font-mono text-xs">{lab.value} {lab.unit}</strong>
+                      <div key={lab.id} className="rounded-md bg-[var(--surface-muted)] p-1.5 border border-[var(--border-strong)]">
+                        <span className="text-[color:var(--muted-grey)] block">{lab.test} ({lab.date})</span>
+                        <strong className="text-[color:var(--brand-ink)] font-mono text-[13px]">{lab.value} {lab.unit}</strong>
                       </div>
                     ))}
                     {preview?.labs.length === 0 && <span>No lab results included</span>}
@@ -593,7 +597,7 @@ export default function SharePage() {
               )}
             </div>
 
-            <div className="rounded-lg bg-[#f8f9f5] p-2 text-[10px] text-[#6e7771] text-center border border-[#e2e7e0]">
+            <div className="rounded-lg bg-[var(--background)] p-2 text-[12px] text-[color:var(--muted-grey)] text-center border border-[var(--border-card)]">
               Scoped prior to encryption. Withheld items cannot leak into ciphertext.
             </div>
           </div>
@@ -604,12 +608,12 @@ export default function SharePage() {
       {createdShare && (
         <section className="glass-panel-forest rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in shadow-md">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ddf2e8] text-[#14382f]">
-              <Sparkles className="h-5 w-5 text-[#2b8a7e]" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--mint-100)] text-[color:var(--brand-ink)]">
+              <Sparkles className="h-5 w-5 text-[color:var(--teal-text)]" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Share Brief Ready &amp; Encrypted</h2>
-              <p className="text-xs text-[#ddf2e8]/80">
+              <p className="text-[13px] text-[#e4eee5]/80">
                 AES-256-GCM encryption applied. The decryption key exists solely in the URL fragment (#k=).
               </p>
             </div>
@@ -617,30 +621,32 @@ export default function SharePage() {
 
           <div className="grid gap-6 sm:grid-cols-12 items-center">
             {/* QR Code Presentation */}
-            <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-5 shadow-xs sm:col-span-5">
+            <div className="qr-surface upload-zone flex flex-col items-center justify-center rounded-2xl bg-white p-5 shadow-xs sm:col-span-5">
               <QRCodeSVG
+                title="QR code for clinician share link"
                 value={createdShare.url}
                 size={180}
                 level="M"
                 includeMargin
               />
-              <p className="text-[11px] text-[#525d56] font-bold mt-2 text-center">
+              <p className="text-[12px] text-[color:var(--muted-grey)] font-bold mt-2 text-center">
                 Scan with clinician phone camera
               </p>
             </div>
 
             {/* Link details & Actions */}
-            <div className="space-y-4 sm:col-span-7 text-xs">
+            <div className="space-y-4 sm:col-span-7 text-[13px]">
               <div>
-                <label className="text-xs font-bold text-[#ddf2e8] block mb-1">
+                <label htmlFor="encrypted-share-url" className="text-[13px] font-bold text-[#e4eee5] block mb-1">
                   Encrypted Share URL
                 </label>
                 <div className="flex items-center gap-2">
                   <input
+                    id="encrypted-share-url"
                     type="text"
                     readOnly
                     value={createdShare.url}
-                    className="w-full rounded-xl border border-[#2b8a7e]/50 bg-white/10 px-3 py-2 text-xs font-mono text-white focus:outline-none"
+                    className="w-full rounded-xl border border-[var(--teal-text)]/50 bg-white/10 px-3 py-2 text-[13px] font-mono text-white focus:outline-none"
                   />
                   <button
                     type="button"
@@ -650,7 +656,7 @@ export default function SharePage() {
                       showToast('Share link copied to clipboard', 'success');
                       setTimeout(() => setCopySuccess(false), 2000);
                     }}
-                    className="inline-flex items-center gap-1 rounded-xl bg-[#ddf2e8] px-3.5 py-2 text-xs font-bold text-[#14382f] hover:bg-white transition-colors shrink-0 shadow-2xs"
+                    className="inline-flex items-center gap-1 rounded-xl bg-[var(--mint-100)] px-3.5 py-2 text-[13px] font-bold text-[color:var(--brand-ink)] hover:bg-white transition-colors shrink-0 shadow-2xs"
                   >
                     {copySuccess ? <Check className="h-3.5 w-3.5 text-emerald-700" /> : <Copy className="h-3.5 w-3.5" />}
                     <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
@@ -663,7 +669,7 @@ export default function SharePage() {
                   href={createdShare.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#3eb4a4] px-4 py-2.5 text-xs font-bold text-[#0d2821] hover:bg-[#32998b] transition-colors shadow-2xs"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--mint-100)] px-4 py-2.5 text-[13px] font-bold text-[color:var(--brand-ink)] hover:bg-[var(--surface-muted)] transition-colors shadow-2xs"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   <span>Open Brief as Clinician</span>
@@ -675,17 +681,17 @@ export default function SharePage() {
       )}
 
       {/* Active Shares Management Table */}
-      <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+      <section className="glass-panel record-section rounded-2xl p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
-          <h2 className="text-base font-bold text-[#14382f] flex items-center gap-2">
-            <Clock className="h-4 w-4 text-[#2b8a7e]" />
+          <h2 className="text-base font-bold text-[color:var(--brand-ink)] flex items-center gap-2">
+            <Clock className="h-4 w-4 text-[color:var(--teal-text)]" />
             <span>Active &amp; Past Share Links ({shares.length})</span>
           </h2>
-          <span className="text-xs text-[#6e7771]">Track opens &amp; revoke access</span>
+          <span className="text-[13px] text-[color:var(--muted-grey)]">Track opens &amp; revoke access</span>
         </div>
 
         {shares.length === 0 ? (
-          <p className="text-xs text-[#6e7771] italic py-4">No shares created yet.</p>
+          <p className="text-[13px] text-[color:var(--muted-grey)] italic py-4">No shares created yet.</p>
         ) : (
           <div className="space-y-3">
             {shares.map((s) => {
@@ -696,12 +702,12 @@ export default function SharePage() {
               return (
                 <div
                   key={s.id}
-                  className="rounded-xl border border-[#e2e7e0] bg-[#f8f9f5] p-4 shadow-2xs space-y-3 transition-colors hover:border-[#b8c9bf]"
+                  className="review-item rounded-xl border border-[var(--border-card)] bg-[var(--background)] p-4 shadow-2xs space-y-3 transition-colors hover:border-[var(--border-strong)]"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <span className="font-bold text-sm text-[#14382f] block">{s.recipientLabel}</span>
-                      <p className="text-[11px] text-[#6e7771] mt-0.5">
+                      <span className="font-bold text-sm text-[color:var(--brand-ink)] block">{s.recipientLabel}</span>
+                      <p className="text-[12px] text-[color:var(--muted-grey)] mt-0.5">
                         Created: {new Date(s.createdAt).toLocaleDateString()} · Expiry:{' '}
                         {new Date(s.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         {s.withheldCount > 0 && ` · ${s.withheldCount} item(s) withheld`}
@@ -710,15 +716,15 @@ export default function SharePage() {
 
                     <div className="flex items-center gap-2">
                       {isRevoked ? (
-                        <span className="rounded-md bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-800">
+                        <span className="rounded-md bg-rose-100 px-2 py-0.5 text-[13px] font-bold text-rose-800">
                           Revoked
                         </span>
                       ) : isExpired ? (
-                        <span className="rounded-md bg-zinc-200 px-2 py-0.5 text-xs font-bold text-zinc-700">
+                        <span className="rounded-md bg-zinc-200 px-2 py-0.5 text-[13px] font-bold text-zinc-700">
                           Expired
                         </span>
                       ) : (
-                        <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
+                        <span className="rounded-md bg-[var(--mint-100)] px-2 py-0.5 text-[13px] font-bold text-[color:var(--brand-ink)]">
                           Active
                         </span>
                       )}
@@ -727,7 +733,7 @@ export default function SharePage() {
                         <button
                           type="button"
                           onClick={() => handleRevoke(s)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors"
+                          className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-[13px] font-semibold text-rose-700 hover:bg-rose-50 transition-colors"
                         >
                           <Trash2 className="h-3 w-3" />
                           <span>Revoke</span>
@@ -737,7 +743,7 @@ export default function SharePage() {
                       <button
                         type="button"
                         onClick={() => handleFetchAccessLog(s)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-[#d6ded5] bg-white px-2.5 py-1 text-xs font-semibold text-[#525d56] hover:bg-[#f1f4ee] transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-card)] bg-white px-2.5 py-1 text-[13px] font-semibold text-[color:var(--muted-grey)] hover:bg-[var(--surface-muted)] transition-colors"
                       >
                         <Eye className="h-3 w-3" />
                         <span>{loadingLogId === s.id ? 'Checking...' : 'Audit Log'}</span>
@@ -747,12 +753,12 @@ export default function SharePage() {
 
                   {/* Access log details */}
                   {logs.length > 0 && (
-                    <div className="rounded-lg bg-white p-3 border border-[#e2e7e0] text-xs space-y-1">
-                      <span className="font-bold text-[#14382f] block text-[11px]">Access History:</span>
+                    <div className="rounded-lg bg-white p-3 border border-[var(--border-card)] text-[13px] space-y-1">
+                      <span className="font-bold text-[color:var(--brand-ink)] block text-[12px]">Access History:</span>
                       {logs.map((e, idx) => (
-                        <div key={idx} className="flex justify-between text-[#525d56] text-[11px]">
+                        <div key={idx} className="flex justify-between text-[color:var(--muted-grey)] text-[12px]">
                           <span>{new Date(e.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                          <span className="font-mono text-[#859088] truncate max-w-xs">{e.ua}</span>
+                          <span className="font-mono text-[color:var(--muted-grey)] truncate max-w-xs">{e.ua}</span>
                         </div>
                       ))}
                     </div>

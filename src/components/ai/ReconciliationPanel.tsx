@@ -54,28 +54,28 @@ export function ReconciliationPanel({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
+            <span className="rounded-md bg-[var(--mint-100)] px-2 py-0.5 text-[13px] font-bold text-[color:var(--brand-ink)]">
               RECONCILIATION INTELLIGENCE
             </span>
-            <span className="text-xs text-[#6e7771]">Cross-Prescriber &amp; Timeline Audit</span>
+            <span className="text-[13px] text-[color:var(--muted-grey)]">Cross-Prescriber &amp; Timeline Audit</span>
           </div>
-          <h2 className="mt-1 text-xl font-bold tracking-tight text-[#14382f]">
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-[color:var(--brand-ink)]">
             Clinical Inconsistencies &amp; Lab Progression
           </h2>
-          <p className="text-xs text-[#525d56] mt-0.5">
+          <p className="text-[13px] text-[color:var(--muted-grey)] mt-0.5">
             Identify duplicate active ingredients across doctors, outdated therapies, and longitudinal lab trends.
           </p>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 text-[13px]">
           <button
             type="button"
             onClick={() => setCategoryFilter('all')}
             className={`rounded-lg px-2.5 py-1 font-semibold transition-all ${
               categoryFilter === 'all'
-                ? 'bg-[#14382f] text-white shadow-2xs'
-                : 'bg-white text-[#525d56] border border-[#d6ded5] hover:bg-[#f1f4ee]'
+                ? 'bg-[var(--forest-800)] text-white shadow-2xs'
+                : 'bg-white text-[color:var(--muted-grey)] border border-[var(--border-card)] hover:bg-[var(--surface-muted)]'
             }`}
           >
             All Findings ({rawFindings.length})
@@ -85,8 +85,8 @@ export function ReconciliationPanel({
             onClick={() => setCategoryFilter('duplicate-ingredient')}
             className={`rounded-lg px-2.5 py-1 font-semibold transition-all ${
               categoryFilter === 'duplicate-ingredient'
-                ? 'bg-[#14382f] text-white shadow-2xs'
-                : 'bg-white text-[#525d56] border border-[#d6ded5] hover:bg-[#f1f4ee]'
+                ? 'bg-[var(--forest-800)] text-white shadow-2xs'
+                : 'bg-white text-[color:var(--muted-grey)] border border-[var(--border-card)] hover:bg-[var(--surface-muted)]'
             }`}
           >
             Duplicate Therapies
@@ -96,8 +96,8 @@ export function ReconciliationPanel({
             onClick={() => setCategoryFilter('outdated-medication')}
             className={`rounded-lg px-2.5 py-1 font-semibold transition-all ${
               categoryFilter === 'outdated-medication'
-                ? 'bg-[#14382f] text-white shadow-2xs'
-                : 'bg-white text-[#525d56] border border-[#d6ded5] hover:bg-[#f1f4ee]'
+                ? 'bg-[var(--forest-800)] text-white shadow-2xs'
+                : 'bg-white text-[color:var(--muted-grey)] border border-[var(--border-card)] hover:bg-[var(--surface-muted)]'
             }`}
           >
             Stale Meds
@@ -107,8 +107,8 @@ export function ReconciliationPanel({
             onClick={() => setCategoryFilter('lab-discordance')}
             className={`rounded-lg px-2.5 py-1 font-semibold transition-all ${
               categoryFilter === 'lab-discordance'
-                ? 'bg-[#14382f] text-white shadow-2xs'
-                : 'bg-white text-[#525d56] border border-[#d6ded5] hover:bg-[#f1f4ee]'
+                ? 'bg-[var(--forest-800)] text-white shadow-2xs'
+                : 'bg-white text-[color:var(--muted-grey)] border border-[var(--border-card)] hover:bg-[var(--surface-muted)]'
             }`}
           >
             Lab Trends
@@ -117,7 +117,7 @@ export function ReconciliationPanel({
       </div>
 
       {/* Findings List */}
-      <div className="space-y-4">
+      <div className="reconciliation-grid grid gap-4 lg:grid-cols-2">
         {findings.map((finding) => {
           const resolution = resolvedIds[finding.id];
           const isResolved = Boolean(resolution);
@@ -130,7 +130,7 @@ export function ReconciliationPanel({
                   ? 'border-emerald-200 bg-emerald-50/40 opacity-75'
                   : finding.severity === 'high'
                   ? 'border-amber-300 bg-amber-50/30'
-                  : 'border-[#d6ded5] bg-white'
+                  : 'border-[var(--border-card)] bg-white'
               }`}
             >
               {/* Finding Title & Badges */}
@@ -142,7 +142,7 @@ export function ReconciliationPanel({
                         ? 'bg-emerald-100 text-emerald-800'
                         : finding.severity === 'high'
                         ? 'bg-amber-100 text-amber-800'
-                        : 'bg-[#ddf2e8] text-[#14382f]'
+                        : 'bg-[var(--mint-100)] text-[color:var(--brand-ink)]'
                     }`}
                   >
                     {isResolved ? (
@@ -152,28 +152,28 @@ export function ReconciliationPanel({
                     )}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-[#14382f]">{finding.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm font-bold text-[color:var(--brand-ink)]">{finding.title}</h3>
                       <span
                         className={`rounded px-1.5 py-0.2 text-[10px] font-bold uppercase ${
                           finding.severity === 'high'
                             ? 'bg-amber-200 text-amber-900'
                             : finding.severity === 'medium'
                             ? 'bg-orange-100 text-orange-900'
-                            : 'bg-[#ddf2e8] text-[#14382f]'
+                            : 'bg-[var(--mint-100)] text-[color:var(--brand-ink)]'
                         }`}
                       >
                         {finding.severity} priority
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-[#525d56] leading-relaxed max-w-2xl">
+                    <p className="mt-1 text-[13px] text-[color:var(--muted-grey)] leading-relaxed max-w-2xl">
                       {finding.explanation}
                     </p>
                   </div>
                 </div>
 
                 {isResolved && (
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-[13px] font-semibold text-emerald-800">
                     Resolved ({resolution})
                   </span>
                 )}
@@ -184,15 +184,15 @@ export function ReconciliationPanel({
                 {finding.records.map((rec, i) => (
                   <div
                     key={i}
-                    className="rounded-xl border border-[#e2e7e0] bg-[#f8f9f5] p-3 text-xs space-y-1.5"
+                    className="rounded-xl border border-[var(--border-card)] bg-[var(--background)] p-3 text-[13px] space-y-1.5"
                   >
-                    <div className="flex items-center justify-between text-[#14382f]">
+                    <div className="flex items-center justify-between text-[color:var(--brand-ink)]">
                       <span className="font-bold">{rec.label}</span>
-                      {rec.date && <span className="text-[10px] text-[#6e7771]">{rec.date}</span>}
+                      {rec.date && <span className="text-[12px] text-[color:var(--muted-grey)]">{rec.date}</span>}
                     </div>
-                    <p className="text-[#3b4c44] font-medium">{rec.value}</p>
-                    <p className="text-[10px] text-[#6e7771] flex items-center gap-1 pt-1 border-t border-[#e2e7e0]">
-                      <FileText className="h-3 w-3 text-[#2b8a7e]" />
+                    <p className="text-[color:var(--brand-ink)] font-medium">{rec.value}</p>
+                    <p className="text-[12px] text-[color:var(--muted-grey)] flex items-center gap-1 pt-1 border-t border-[var(--border-card)]">
+                      <FileText className="h-3 w-3 text-[color:var(--teal-text)]" />
                       <span>{rec.source}</span>
                     </p>
                   </div>
@@ -201,9 +201,9 @@ export function ReconciliationPanel({
 
               {/* Recommendation & Resolution Actions */}
               {!isResolved && (
-                <div className="mt-4 pt-3 border-t border-[#e2e7e0] flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs text-[#525d56] italic">
-                    <strong className="text-[#14382f] not-italic">Suggested Action:</strong> {finding.suggestedResolution}
+                <div className="mt-4 pt-3 border-t border-[var(--border-card)] flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-[13px] text-[color:var(--muted-grey)] italic">
+                    <strong className="text-[color:var(--brand-ink)] not-italic">Suggested Action:</strong> {finding.suggestedResolution}
                   </p>
 
                   <div className="flex items-center gap-2">
@@ -218,9 +218,9 @@ export function ReconciliationPanel({
                             finding.records[0].label
                           )
                         }
-                        className="inline-flex items-center gap-1 rounded-xl bg-[#14382f] px-3 py-1.5 text-xs font-semibold text-[#ddf2e8] shadow-2xs hover:bg-[#1a473c] transition-all"
+                        className="inline-flex items-center gap-1 rounded-xl bg-[var(--forest-800)] px-3 py-1.5 text-[13px] font-semibold text-[#e4eee5] shadow-2xs hover:bg-[var(--forest-700)] transition-colors"
                       >
-                        <Check className="h-3.5 w-3.5 text-[#3eb4a4]" />
+                        <Check className="h-3.5 w-3.5 text-[#8ccab5]" />
                         <span>Mark Older Prescription Stopped</span>
                       </button>
                     )}
@@ -236,7 +236,7 @@ export function ReconciliationPanel({
                             finding.records[0].label
                           )
                         }
-                        className="inline-flex items-center gap-1 rounded-xl border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-all"
+                        className="inline-flex items-center gap-1 rounded-xl border border-rose-300 bg-rose-50 px-3 py-1.5 text-[13px] font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
                       >
                         <span>Mark Medication Stopped</span>
                       </button>
@@ -245,7 +245,7 @@ export function ReconciliationPanel({
                     <button
                       type="button"
                       onClick={() => handleResolveAction(finding.id, 'dismissed')}
-                      className="rounded-xl border border-[#d6ded5] bg-white px-3 py-1.5 text-xs font-semibold text-[#6e7771] hover:bg-[#f1f4ee] hover:text-[#14382f] transition-all"
+                      className="rounded-xl border border-[var(--border-card)] bg-white px-3 py-1.5 text-[13px] font-semibold text-[color:var(--muted-grey)] hover:bg-[var(--surface-muted)] hover:text-[color:var(--brand-ink)] transition-colors"
                     >
                       Dismiss
                     </button>
