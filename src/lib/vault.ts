@@ -36,7 +36,7 @@ function itemProvenance(item: ExtractedItem, edited = false): Provenance {
 
 type UnknownData = Record<string, unknown>;
 
-function itemToEntity(item: ExtractedItem, editedData?: UnknownData) {
+function itemToEntity(item: ExtractedItem, editedData?: UnknownData, fallbackDate?: string | null) {
   const id = `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   const edited = Boolean(editedData);
   const data = (editedData ?? item.data) as UnknownData;
@@ -79,7 +79,7 @@ function itemToEntity(item: ExtractedItem, editedData?: UnknownData) {
         value: typeof data.value === 'string' ? parseFloat(data.value) : Number(data.value || 0),
         unit: String(data.unit || ''),
         refRange: data.refRange ? String(data.refRange) : null,
-        date: String(data.date || new Date().toISOString().slice(0, 10)),
+        date: String(data.date || fallbackDate || new Date().toISOString().slice(0, 10)),
         provenance,
       } satisfies LabResult;
 
@@ -109,10 +109,25 @@ export interface VaultState {
   rejectItem: (tempId: string) => void;
   updateItem: (id: string, patch: Partial<Medication | Allergy | Condition | LabResult | CareEvent>) => void;
   removeItem: (id: string) => void;
-  setAllergyStatus: (s: 'unknown' | 'none-known' | 'has-allergies') => void;
+  setAllergyStatus: (status: 'unknown' | 'none-known' | 'has-allergies') => void;
+  updateProfile: (profile: PatientRecord['profile']) => void;
   addPatientReportedItem: (
-    type: 'medication' | 'allergy' | 'condition',
-    data: { name?: string; substance?: string; reaction?: string; dosage?: string; strength?: string }
+    type: 'medication' | 'allergy' | 'condition' | 'lab' | 'event',
+    data: {
+      name?: string;
+      substance?: string;
+      reaction?: string;
+      dosage?: string;
+      strength?: string;
+      test?: string;
+      value?: string | number;
+      unit?: string;
+      refRange?: string;
+      date?: string;
+      title?: string;
+      eventType?: 'visit' | 'admission' | 'procedure';
+      facility?: string;
+    }
   ) => void;
   deleteAllData: () => Promise<void>;
 }
@@ -170,7 +185,8 @@ export const useVault = create<VaultState>()(
         if (!item) return;
 
         const remainingPending = state.record.pendingReview.filter((i) => i.tempId !== tempId);
-        const entity = itemToEntity(item, editedData);
+        const docDate = (state.record.documents || []).find((d) => d.id === item.documentId)?.date;
+        const entity = itemToEntity(item, editedData, docDate);
         if (!entity) return;
 
         const newRecord: PatientRecord = {
@@ -257,9 +273,35 @@ export const useVault = create<VaultState>()(
         });
       },
 
+      updateProfile: (profile: PatientRecord['profile']) => {
+        const state = get();
+        if (!state.record) return;
+
+        set({
+          record: {
+            ...state.record,
+            profile,
+          },
+        });
+      },
+
       addPatientReportedItem: (
-        type: 'medication' | 'allergy' | 'condition',
-        data: { name?: string; substance?: string; reaction?: string; dosage?: string; strength?: string }
+        type: 'medication' | 'allergy' | 'condition' | 'lab' | 'event',
+        data: {
+          name?: string;
+          substance?: string;
+          reaction?: string;
+          dosage?: string;
+          strength?: string;
+          test?: string;
+          value?: string | number;
+          unit?: string;
+          refRange?: string;
+          date?: string;
+          title?: string;
+          eventType?: 'visit' | 'admission' | 'procedure';
+          facility?: string;
+        }
       ) => {
         const state = get();
         if (!state.record) return;
@@ -310,6 +352,40 @@ export const useVault = create<VaultState>()(
             record: {
               ...state.record,
               conditions: [...(state.record.conditions || []), cond],
+            },
+          });
+        } else if (type === 'lab' && (data.test || data.name)) {
+          const testName = data.test || data.name || 'Lab Test';
+          const val = typeof data.value === 'string' ? parseFloat(data.value) || 0 : Number(data.value || 0);
+          const lab: LabResult = {
+            id,
+            test: testName,
+            value: val,
+            unit: data.unit || '',
+            refRange: data.refRange || null,
+            date: data.date || new Date().toISOString().slice(0, 10),
+            provenance,
+          };
+          set({
+            record: {
+              ...state.record,
+              labs: [...(state.record.labs || []), lab],
+            },
+          });
+        } else if (type === 'event' && (data.title || data.name)) {
+          const eventTitle = data.title || data.name || 'Clinical Encounter';
+          const evt: CareEvent = {
+            id,
+            type: data.eventType || 'visit',
+            title: eventTitle,
+            date: data.date || new Date().toISOString().slice(0, 10),
+            facility: data.facility || null,
+            provenance,
+          };
+          set({
+            record: {
+              ...state.record,
+              events: [...(state.record.events || []), evt],
             },
           });
         }

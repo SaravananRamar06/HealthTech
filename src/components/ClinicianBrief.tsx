@@ -1,6 +1,7 @@
 // src/components/ClinicianBrief.tsx - One-screen clinical brief for consults
 // Owner: P4. Designed for 30-second clinician review: allergies first, flags, medicines, lab trends, timeline, withheld banner.
 
+import { useState, useMemo } from 'react';
 import type { SharePayload } from '@/lib/types';
 import {
   AllergyList,
@@ -10,7 +11,7 @@ import {
   Timeline,
   FlagList,
 } from '@/components/record';
-import { ShieldCheck, Clock, AlertTriangle, Stethoscope, Printer } from 'lucide-react';
+import { ShieldCheck, Clock, AlertTriangle, Stethoscope, Printer, Search, X } from 'lucide-react';
 
 export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
   const {
@@ -28,6 +29,8 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
     withheldCount,
   } = payload;
 
+  const [query, setQuery] = useState('');
+
   const createdDate = new Date(createdAt).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -43,6 +46,32 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  // Filtered data based on clinician search
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) {
+      return { allergies, conditions, medications, labs, events, isFiltered: false };
+    }
+
+    const matches = (s: string | null | undefined) => (s ? s.toLowerCase().includes(q) : false);
+
+    return {
+      allergies: allergies.filter((a) => matches(a.substance) || matches(a.reaction)),
+      conditions: conditions.filter((c) => matches(c.name)),
+      medications: medications.filter(
+        (m) =>
+          matches(m.name) ||
+          matches(m.dosage) ||
+          matches(m.strength) ||
+          m.ingredients.some((ing) => matches(ing)) ||
+          matches(m.prescriber)
+      ),
+      labs: labs.filter((l) => matches(l.test) || matches(l.unit)),
+      events: events.filter((e) => matches(e.title) || matches(e.facility)),
+      isFiltered: true,
+    };
+  }, [allergies, conditions, medications, labs, events, query]);
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6">
@@ -69,7 +98,7 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
                 {patient.name}
               </h1>
               <p className="text-xs text-[#525d56] mt-0.5">
-                Age: <strong className="text-[#1c2420]">{patient.age}</strong> · Sex: <strong className="text-[#1c2420]">{patient.sex}</strong>
+                Age: <strong className="text-[#1c2420]">{patient.age}</strong> · Sex: <strong className="text-[#1c2420] capitalize">{patient.sex}</strong>
                 {patient.emergencyContact && (
                   <span className="ml-2">
                     · Emergency: <strong>{patient.emergencyContact.name}</strong> ({patient.emergencyContact.phone})
@@ -106,6 +135,28 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
         </div>
       </header>
 
+      {/* Clinician Quick Search Bar (Hidden when printed) */}
+      <div className="print:hidden relative bg-white rounded-xl border border-[#d6ded5] p-2.5 shadow-2xs flex items-center gap-2">
+        <Search className="h-4 w-4 text-[#6e7771] ml-1 shrink-0" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filter authorized records (e.g. Metformin, Allergy, Creatinine)..."
+          className="w-full text-xs text-[#1c2420] placeholder-[#8a948e] focus:outline-none bg-transparent"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            className="text-[#6e7771] hover:text-[#1c2420] p-1 rounded-md"
+            title="Clear filter"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
       {/* Withheld Items Alert Banner */}
       {withheldCount > 0 && (
         <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 text-xs text-amber-950 shadow-2xs space-y-1">
@@ -125,11 +176,11 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
           <span>⚠️ Allergies &amp; Adverse Drug Reactions</span>
           <span className="text-xs font-normal text-rose-700">Priority Clinical Scan</span>
         </h2>
-        <AllergyList allergies={allergies} status={allergyStatus} readOnly={true} />
+        <AllergyList allergies={filtered.allergies} status={allergyStatus} readOnly={true} />
       </section>
 
       {/* 2. Reconciliation & Safety Flags */}
-      {flags && flags.length > 0 && (
+      {flags && flags.length > 0 && !filtered.isFiltered && (
         <section className="glass-panel rounded-2xl p-6 shadow-xs">
           <FlagList flags={flags} title="Clinical Reconciliation Flags (For Review)" />
         </section>
@@ -142,10 +193,10 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
             Current &amp; Active Medications
           </h2>
           <span className="text-xs text-[#6e7771]">
-            {medications.filter((m) => m.status === 'active').length} active regimens
+            {filtered.medications.filter((m) => m.status === 'active').length} active regimens
           </span>
         </div>
-        <MedicineList medications={medications} readOnly={true} />
+        <MedicineList medications={filtered.medications} readOnly={true} />
       </section>
 
       {/* 4. Active Conditions */}
@@ -153,7 +204,7 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
         <div className="border-b border-[#eef2ec] pb-3">
           <h2 className="text-base font-bold text-[#14382f]">Active Health Conditions</h2>
         </div>
-        <ConditionList conditions={conditions} />
+        <ConditionList conditions={filtered.conditions} readOnly={true} />
       </section>
 
       {/* 5. Laboratory Results & Trends */}
@@ -161,7 +212,7 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
         <div className="border-b border-[#eef2ec] pb-3">
           <h2 className="text-base font-bold text-[#14382f]">Laboratory Results &amp; Longitudinal Trends</h2>
         </div>
-        <LabTrend labs={labs} readOnly={true} />
+        <LabTrend labs={filtered.labs} readOnly={true} />
       </section>
 
       {/* 6. Timeline & Encounters */}
@@ -169,7 +220,7 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
         <div className="border-b border-[#eef2ec] pb-3">
           <h2 className="text-base font-bold text-[#14382f]">Clinical Encounters &amp; Procedures</h2>
         </div>
-        <Timeline events={events} readOnly={true} />
+        <Timeline events={filtered.events} readOnly={true} />
       </section>
 
       {/* Medical Device & Synthetic Disclaimer */}

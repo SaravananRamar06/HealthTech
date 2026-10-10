@@ -1,11 +1,14 @@
-// src/components/record/ConditionList.tsx - Conditions with source badges
-// Owner: P1
-
 import type { Condition } from '@/lib/types';
 import { SourceBadge } from './SourceBadge';
-import { HeartPulse } from 'lucide-react';
+import { HeartPulse, XCircle } from 'lucide-react';
 
-export function ConditionList({ conditions }: { conditions: Condition[] }) {
+interface ConditionListProps {
+  conditions: Condition[];
+  onRemove?: (id: string) => void;
+  readOnly?: boolean;
+}
+
+export function ConditionList({ conditions, onRemove, readOnly = false }: ConditionListProps) {
   if (!conditions || conditions.length === 0) {
     return <p className="text-sm text-[#6e7771] italic py-2">No health conditions recorded.</p>;
   }
@@ -28,7 +31,20 @@ export function ConditionList({ conditions }: { conditions: Condition[] }) {
               )}
             </div>
           </div>
-          <SourceBadge provenance={c.provenance} />
+          <div className="flex items-center gap-2.5">
+            <SourceBadge provenance={c.provenance} />
+            {!readOnly && onRemove && (
+              <button
+                type="button"
+                onClick={() => onRemove(c.id)}
+                className="inline-flex items-center gap-1 text-[11px] text-[#859088] hover:text-rose-700 transition-colors"
+                title="Remove condition"
+              >
+                <XCircle className="h-3.5 w-3.5" />
+                <span className="sr-only">Remove</span>
+              </button>
+            )}
+          </div>
         </div>
       ))}
     </div>

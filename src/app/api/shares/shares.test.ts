@@ -78,4 +78,25 @@ describe('Shares API Routes', () => {
     const res = await createShareRoute(badReq);
     expect(res.status).toBe(400);
   });
+
+  it('rejects malformed ids (no Redis key suffix probing) and malformed iv, and sets no-store', async () => {
+    const res = await getShareRoute(new Request('http://localhost:3000/api/shares/abc:log'), {
+      params: Promise.resolve({ id: 'abc:log' }),
+    });
+    expect(res.status).toBe(404);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+
+    const badIv = await createShareRoute(
+      new Request('http://localhost:3000/api/shares', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ciphertext: 'abc',
+          iv: 'x'.repeat(100),
+          expiresAt: new Date(Date.now() + 3600000).toISOString(),
+        }),
+      })
+    );
+    expect(badIv.status).toBe(400);
+  });
 });

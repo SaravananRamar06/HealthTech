@@ -9,35 +9,50 @@ function randomHex(bytes: number): string {
     .join('');
 }
 
+const NO_STORE = { 'Cache-Control': 'no-store' };
+const B64URL = /^[A-Za-z0-9_-]+$/;
+
 export async function POST(request: Request) {
   try {
+    // Reject oversized bodies before parsing (ciphertext cap is 300 KB)
+    const declaredLength = Number(request.headers.get('content-length') || 0);
+    if (declaredLength > 400 * 1024) {
+      return NextResponse.json({ error: 'Request too large' }, { status: 413, headers: NO_STORE });
+    }
     const body = await request.json();
     const { ciphertext, iv, expiresAt } = body;
 
     if (!ciphertext || typeof ciphertext !== 'string') {
-      return NextResponse.json({ error: 'Missing or invalid ciphertext' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing or invalid ciphertext' }, { status: 400, headers: NO_STORE });
     }
     if (!iv || typeof iv !== 'string') {
-      return NextResponse.json({ error: 'Missing or invalid iv' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing or invalid iv' }, { status: 400, headers: NO_STORE });
     }
     if (!expiresAt || typeof expiresAt !== 'string') {
-      return NextResponse.json({ error: 'Missing or invalid expiresAt' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing or invalid expiresAt' }, { status: 400, headers: NO_STORE });
+    }
+
+    if (!B64URL.test(ciphertext)) {
+      return NextResponse.json({ error: 'Ciphertext must be base64url' }, { status: 400, headers: NO_STORE });
+    }
+    if (iv.length > 64 || !B64URL.test(iv)) {
+      return NextResponse.json({ error: 'Invalid iv' }, { status: 400, headers: NO_STORE });
     }
 
     // Size limit: ciphertext <= 300 KB
     if (ciphertext.length > 300 * 1024) {
-      return NextResponse.json({ error: 'Ciphertext exceeds 300KB limit' }, { status: 413 });
+      return NextResponse.json({ error: 'Ciphertext exceeds 300KB limit' }, { status: 413, headers: NO_STORE });
     }
 
     const expiryTime = new Date(expiresAt).getTime();
     const nowTime = Date.now();
     if (isNaN(expiryTime) || expiryTime <= nowTime) {
-      return NextResponse.json({ error: 'Expiry must be in the future' }, { status: 400 });
+      return NextResponse.json({ error: 'Expiry must be in the future' }, { status: 400, headers: NO_STORE });
     }
 
     const maxTtlMs = 7 * 24 * 60 * 60 * 1000; // 7 days max
     if (expiryTime - nowTime > maxTtlMs + 60000) {
-      return NextResponse.json({ error: 'Expiry cannot exceed 7 days' }, { status: 400 });
+      return NextResponse.json({ error: 'Expiry cannot exceed 7 days' }, { status: 400, headers: NO_STORE });
     }
 
     const ttlSeconds = Math.max(60, Math.floor((expiryTime - nowTime) / 1000));
@@ -57,10 +72,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { id, manageToken },
-      { status: 201, headers: { 'Cache-Control': 'no-store' } }
+      { status: 201, headers: NO_STORE }
     );
   } catch (err) {
     console.error('Error creating share:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: NO_STORE });
   }
 }

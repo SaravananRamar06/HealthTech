@@ -38,4 +38,16 @@ describe('Extract API Route', () => {
     const res = await extractRoute(req);
     expect(res.status).toBe(400);
   });
+
+  it('rejects unsupported file types', async () => {
+    const formData = new FormData();
+    formData.append('file', new File(['hello'], 'notes.txt', { type: 'text/plain' }));
+    const req = new Request('http://localhost:3000/api/extract', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const res = await extractRoute(req);
+    expect(res.status).toBe(415);
+  });
 });

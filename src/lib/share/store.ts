@@ -8,6 +8,18 @@ export async function sha256(input: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** Constant-time string comparison (both inputs are fixed-length hex digests). */
+export function safeEqual(a: string, b: string): boolean {
+  const x = new TextEncoder().encode(String(a));
+  const y = new TextEncoder().encode(String(b));
+  let diff = x.length ^ y.length;
+  const n = Math.max(x.length, y.length);
+  for (let i = 0; i < n; i++) {
+    diff |= (x[i] ?? 0) ^ (y[i] ?? 0);
+  }
+  return diff === 0;
+}
+
 export interface ShareStore {
   createShare(
     id: string,
@@ -66,7 +78,7 @@ class MemoryShareStore implements ShareStore {
 
   async getAccessLog(id: string, manageTokenHash: string): Promise<AccessEvent[] | null> {
     const expectedHash = this.auth.get(id);
-    if (!expectedHash || expectedHash !== manageTokenHash) {
+    if (!expectedHash || !safeEqual(expectedHash, manageTokenHash)) {
       return null;
     }
     return this.logs.get(id) || [];
@@ -74,7 +86,7 @@ class MemoryShareStore implements ShareStore {
 
   async revokeShare(id: string, manageTokenHash: string): Promise<boolean> {
     const expectedHash = this.auth.get(id);
-    if (!expectedHash || expectedHash !== manageTokenHash) {
+    if (!expectedHash || !safeEqual(expectedHash, manageTokenHash)) {
       return false;
     }
     this.shares.delete(id);
@@ -121,7 +133,7 @@ class RedisShareStore implements ShareStore {
     return { share, revoked: false };
   }
 
-  async recordAccess(id: string, event: AccessEvent, ttlSeconds = 7 * 86400): Promise<void> {
+  async recordAccess(id: string, event: AccessEvent): Promise<void> {
     const raw = await this.redis.get<string | AccessEvent[]>(`share:${id}:log`);
     const logs: AccessEvent[] = raw
       ? typeof raw === 'string'
@@ -129,12 +141,13 @@ class RedisShareStore implements ShareStore {
         : raw
       : [];
     logs.push(event);
-    await this.redis.set(`share:${id}:log`, JSON.stringify(logs), { ex: ttlSeconds });
+    // keepTtl preserves the expiry + 7 days retention set at creation
+    await this.redis.set(`share:${id}:log`, JSON.stringify(logs), { keepTtl: true });
   }
 
   async getAccessLog(id: string, manageTokenHash: string): Promise<AccessEvent[] | null> {
     const storedHash = await this.redis.get<string>(`share:${id}:auth`);
-    if (!storedHash || storedHash !== manageTokenHash) {
+    if (!storedHash || !safeEqual(String(storedHash), manageTokenHash)) {
       return null;
     }
     const raw = await this.redis.get<string | AccessEvent[]>(`share:${id}:log`);
@@ -144,7 +157,7 @@ class RedisShareStore implements ShareStore {
 
   async revokeShare(id: string, manageTokenHash: string): Promise<boolean> {
     const storedHash = await this.redis.get<string>(`share:${id}:auth`);
-    if (!storedHash || storedHash !== manageTokenHash) {
+    if (!storedHash || !safeEqual(String(storedHash), manageTokenHash)) {
       return false;
     }
     await Promise.all([

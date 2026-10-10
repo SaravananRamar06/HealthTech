@@ -28,6 +28,7 @@ import {
   Sparkles,
   AlertTriangle,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 function getSharesSnapshot(): string {
   if (typeof window === 'undefined') return '[]';
@@ -73,6 +74,7 @@ function useStoredShares(): [ShareRecord[], (updated: ShareRecord[]) => void] {
 
 export default function SharePage() {
   const mounted = useIsMounted();
+  const { showToast } = useToast();
   const { record, loadDemo } = useVault();
   const [shares, saveShares] = useStoredShares();
 
@@ -131,11 +133,11 @@ export default function SharePage() {
 
   async function handleCreateShare() {
     if (!currentRecord) {
-      alert('Please load or create a health record first.');
+      showToast('Please load or create a health record first', 'error');
       return;
     }
     if (!recipient.trim()) {
-      alert('Please enter a recipient name or label.');
+      showToast('Please enter a recipient name or clinician label', 'error');
       return;
     }
 
@@ -205,9 +207,11 @@ export default function SharePage() {
         expiresAt,
         withheldCount: payload.withheldCount,
       });
+
+      showToast('Share brief generated & encrypted with AES-256-GCM', 'success');
     } catch (err) {
       console.error('Error generating share:', err);
-      alert('Error encrypting and creating share link. Please try again.');
+      showToast('Error encrypting and creating share link', 'error');
     } finally {
       setIsEncrypting(false);
     }
@@ -231,12 +235,13 @@ export default function SharePage() {
           s.id === share.id ? { ...s, revokedAt: new Date().toISOString() } : s
         );
         saveShares(updated);
+        showToast(`Revoked access for ${share.recipientLabel}`, 'info');
       } else {
-        alert('Could not revoke share on server.');
+        showToast('Could not revoke share on server', 'error');
       }
     } catch (err) {
       console.error('Error revoking share:', err);
-      alert('Network error while revoking share.');
+      showToast('Network error while revoking share', 'error');
     }
   }
 
@@ -349,9 +354,28 @@ export default function SharePage() {
 
           {/* 2. Section Inclusions */}
           <div className="space-y-2 pt-2 border-t border-[#eef2ec]">
-            <label className="text-xs font-bold text-[#14382f] block">
-              Sections to Include
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-[#14382f] block">
+                Sections to Include ({selectedSections.length} of 6)
+              </label>
+              <div className="flex items-center gap-2 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setSelectedSections(['allergies', 'medications', 'conditions', 'labs', 'events', 'emergencyContact'])}
+                  className="font-bold text-[#2b8a7e] hover:underline"
+                >
+                  Select All
+                </button>
+                <span className="text-[#d6ded5]">·</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSections([])}
+                  className="text-[#6e7771] hover:text-[#1c2420] hover:underline"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { id: 'allergies', label: 'Allergies' },
@@ -615,6 +639,7 @@ export default function SharePage() {
                     onClick={() => {
                       navigator.clipboard.writeText(createdShare.url);
                       setCopySuccess(true);
+                      showToast('Share link copied to clipboard', 'success');
                       setTimeout(() => setCopySuccess(false), 2000);
                     }}
                     className="inline-flex items-center gap-1 rounded-xl bg-[#ddf2e8] px-3.5 py-2 text-xs font-bold text-[#14382f] hover:bg-white transition-colors shrink-0 shadow-2xs"

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/Navigation";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,10 +28,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#f8f9f5] text-[#1c2420]">
-        <Suspense fallback={<div className="h-16 w-full border-b border-[#e2e7e0]/80 bg-[#f8f9f5]/85" />}>
-          <Navigation />
-        </Suspense>
-        <div className="flex-1 flex flex-col">{children}</div>
+        <ToastProvider>
+          <Suspense fallback={<div className="h-16 w-full border-b border-[#e2e7e0]/80 bg-[#f8f9f5]/85" />}>
+            <Navigation />
+          </Suspense>
+          <div className="flex-1 flex flex-col">{children}</div>
+        </ToastProvider>
       </body>
     </html>
   );
