@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="900" viewBox="0 0 700 900" style="background:#fff; font-family:sans-serif;">
+    <rect width="700" height="900" fill="#fafafa"/>
+    <rect x="20" y="20" width="660" height="860" rx="8" fill="#fff" stroke="#e0e0e0" stroke-width="2"/>
+    <rect x="20" y="20" width="660" height="80" rx="8" fill="#f0f4f8"/>
+    <text x="40" y="60" font-size="20" font-weight="bold" fill="#1e293b">GENERAL HOSPITAL CLINICAL LABORATORY</text>
+    <text x="40" y="85" font-size="12" fill="#64748b">Automated Biochemistry Section | NABL Accredited</text>
+    <rect x="40" y="115" width="620" height="26" fill="#fef3c7" rx="4"/>
+    <text x="50" y="132" font-size="11" font-weight="bold" fill="#92400e">SYNTHETIC - DEMONSTRATION ONLY - NOT A REAL RECORD</text>
+    <text x="40" y="170" font-family="monospace, sans-serif" font-size="14" fill="#333">Date: 12-Sep-2026</text>
+<text x="40" y="198" font-family="monospace, sans-serif" font-size="14" fill="#333">Patient: Meena Krishnan (58 / F) | Ref: Dr. R. Menon</text>
+<text x="40" y="226" font-family="monospace, sans-serif" font-size="14" fill="#333">Sample: Fasting Blood Serum | Collected: 08:00 AM</text>
+<text x="40" y="254" font-family="monospace, sans-serif" font-size="14" fill="#333">-------------------------------------------------------------------</text>
+<text x="40" y="282" font-family="monospace, sans-serif" font-size="14" fill="#333">TEST                       RESULT      UNIT        REF RANGE</text>
+<text x="40" y="310" font-family="monospace, sans-serif" font-size="14" fill="#333">HbA1c:                     7.6         %           4.0 - 5.6</text>
+<text x="40" y="338" font-family="monospace, sans-serif" font-size="14" fill="#333">FBS (Fasting Glucose):     118         mg/dL       70 - 99</text>
+<text x="40" y="366" font-family="monospace, sans-serif" font-size="14" fill="#333">TSH:                       3.1         uIU/mL      0.4 - 4.0</text>
+<text x="40" y="394" font-family="monospace, sans-serif" font-size="14" fill="#333">LDL Cholesterol:           112         mg/dL       &lt; 100</text>
+<text x="40" y="422" font-family="monospace, sans-serif" font-size="14" fill="#333">-------------------------------------------------------------------</text>
+<text x="40" y="450" font-family="monospace, sans-serif" font-size="14" fill="#333">Comment: HbA1c improved from 8.4% to 7.6%. TSH normalized on 50mcg thyroxine.</text>
+    <rect x="420" y="780" width="220" height="70" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+    <text x="440" y="810" font-size="11" font-style="italic" fill="#64748b">Verified &amp; Signed</text>
+    <text x="440" y="830" font-size="14" font-weight="bold" fill="#334155">Dr. K. Swaminathan (Pathologist)</text>
+  </svg>

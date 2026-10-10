@@ -1,0 +1,62 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1093 >>
+stream
+BT
+/F1 16 Tf
+50 740 Td
+(GENERAL HOSPITAL - CLINICAL BIOCHEMISTRY REPORT) Tj
+ET
+BT
+/F2 10 Tf
+50 720 Td
+(SYNTHETIC DATA - FOR HACKATHON DEMONSTRATION ONLY - NOT A REAL RECORD) Tj
+ET
+BT
+/F1 11 Tf
+50 690 Td
+16 TL
+(Patient: Meena Krishnan | Age/Sex: 58 / Female | Ref By: Dr. A. Iyer) '
+(Sample Collected: 05-Apr-2026 08:30 AM | Reported: 05-Apr-2026 02:00 PM) '
+(Lab Ref No: LAB-2026-4421) '
+(--------------------------------------------------------------------------) '
+(TEST NAME                     RESULT       UNITS      REFERENCE INTERVAL) '
+(--------------------------------------------------------------------------) '
+(HbA1c                         8.4          %          4.0 - 5.6 \(Good control <7.0\)) '
+(Fasting Blood Sugar \(FBS\)     142          mg/dL      70 - 99) '
+(TSH                           6.8          uIU/mL     0.4 - 4.0) '
+(Serum Creatinine              1.0          mg/dL      0.6 - 1.2) '
+(--------------------------------------------------------------------------) '
+(Interpretation: Glycemic control inadequate. TSH elevated indicating mild hypothyroidism.) '
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000001395 00000 n 
+0000001470 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+1548
+%%EOF

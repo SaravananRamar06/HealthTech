@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "isDemo": true,
+  "profile": {
+    "name": "Meena Krishnan",
+    "dateOfBirth": "1968-04-01",
+    "sex": "female",
+    "emergencyContact": { "name": "Priya Krishnan", "phone": "+91 98765 43210" }
+  },
+  "allergyStatus": "unknown",
+  "allergies": [],
+  "conditions": [
+    {
+      "id": "start_cond_01",
+      "name": "type 2 diabetes mellitus",
+      "since": "2020-01-01",
+      "provenance": { "kind": "patient-reported" }
+    },
+    {
+      "id": "start_cond_02",
+      "name": "hypertension",
+      "since": "2019-01-01",
+      "provenance": { "kind": "patient-reported" }
+    },
+    {
+      "id": "start_cond_03",
+      "name": "primary hypothyroidism",
+      "since": "2018-01-01",
+      "provenance": { "kind": "patient-reported" }
+    }
+  ],
+  "medications": [
+    {
+      "id": "start_med_01",
+      "name": "escitalopram 10 mg",
+      "ingredients": ["escitalopram"],
+      "strength": "10 mg",
+      "dosage": "OD",
+      "prescriber": null,
+      "prescribedOn": null,
+      "status": "active",
+      "provenance": { "kind": "patient-reported" }
+    }
+  ],
+  "labs": [],
+  "events": [],
+  "documents": [],
+  "pendingReview": []
+}

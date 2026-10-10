@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "isDemo": true,
+  "profile": {
+    "name": "Meena Krishnan",
+    "dateOfBirth": "1968-04-01",
+    "sex": "female",
+    "emergencyContact": { "name": "Priya Krishnan", "phone": "+91 98765 43210" }
+  },
+  "allergyStatus": "has-allergies",
+  "allergies": [
+    {
+      "id": "allergy_001",
+      "substance": "amoxicillin-clavulanate",
+      "reaction": "urticaria",
+      "provenance": { "kind": "document", "documentId": "doc_01", "excerpt": "Patient developed urticarial rash after course of amoxicillin-clavulanate for dental infection.", "confidence": "high", "edited": false }
+    }
+  ],
+  "conditions": [
+    {
+      "id": "condition_001",
+      "name": "type 2 diabetes mellitus",
+      "since": "2020-01-01",
+      "provenance": { "kind": "patient-reported" }
+    },
+    {
+      "id": "condition_002",
+      "name": "hypertension",
+      "since": "2019-01-01",
+      "provenance": { "kind": "patient-reported" }
+    },
+    {
+      "id": "condition_003",
+      "name": "primary hypothyroidism",
+      "since": "2018-01-01",
+      "provenance": { "kind": "patient-reported" }
+    }
+  ],
+  "medications": [
+    {
+      "id": "med_001",
+      "name": "amlodipine 5 mg",
+      "ingredients": ["amlodipine"],
+      "strength": "5 mg",
+      "dosage": "OD",
+      "prescriber": "Discharge Team",
+      "prescribedOn": "2025-01-15",
+      "status": "active",
+      "provenance": { "kind": "document", "documentId": "doc_01", "excerpt": "Amlodipine 5 mg tablet once daily.", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "med_002",
+      "name": "metformin 500 mg",
+      "ingredients": ["metformin"],
+      "strength": "500 mg",
+      "dosage": "BD",
+      "prescriber": "Discharge Team",
+      "prescribedOn": "2025-01-15",
+      "status": "active",
+      "provenance": { "kind": "document", "documentId": "doc_01", "excerpt": "Metformin 500 mg twice daily after meals.", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "med_003",
+      "name": "Metfora 500",
+      "ingredients": ["metformin"],
+      "strength": "500 mg",
+      "dosage": "BD",
+      "prescriber": "Dr. A. Iyer",
+      "prescribedOn": "2026-03-10",
+      "status": "active",
+      "provenance": { "kind": "document", "documentId": "doc_02", "excerpt": "Metfora 500 mg twice daily.", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "med_004",
+      "name": "glimepiride 1 + metformin 500 mg",
+      "ingredients": ["glimepiride", "metformin"],
+      "strength": "1 mg + 500 mg",
+      "dosage": "OD",
+      "prescriber": "Dr. R. Menon",
+      "prescribedOn": "2026-07-20",
+      "status": "active",
+      "provenance": { "kind": "document", "documentId": "doc_04", "excerpt": "Glimfora-M1 once daily.", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "med_005",
+      "name": "levothyroxine 50 mcg",
+      "ingredients": ["levothyroxine"],
+      "strength": "50 mcg",
+      "dosage": "OD",
+      "prescriber": "Dr. A. Iyer",
+      "prescribedOn": "2026-03-10",
+      "status": "active",
+      "provenance": { "kind": "document", "documentId": "doc_02", "excerpt": "Levothyroxine 50 mcg once daily.", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "med_006",
+      "name": "escitalopram 10 mg",
+      "ingredients": ["escitalopram"],
+      "strength": "10 mg",
+      "dosage": "OD",
+      "prescriber": null,
+      "prescribedOn": null,
+      "status": "active",
+      "provenance": { "kind": "patient-reported" }
+    }
+  ],
+  "labs": [
+    {
+      "id": "lab_001",
+      "test": "HbA1c",
+      "value": 8.4,
+      "unit": "%",
+      "date": "2026-04-05",
+      "refRange": "4.0-5.6",
+      "provenance": { "kind": "document", "documentId": "doc_03", "excerpt": "HbA1c: 8.4%", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "lab_002",
+      "test": "Fasting Blood Sugar (FBS)",
+      "value": 142,
+      "unit": "mg/dL",
+      "date": "2026-04-05",
+      "refRange": "70-99",
+      "provenance": { "kind": "document", "documentId": "doc_03", "excerpt": "FBS: 142 mg/dL", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "lab_003",
+      "test": "TSH",
+      "value": 6.8,
+      "unit": "µIU/mL",
+      "date": "2026-04-05",
+      "refRange": "0.4-4.0",
+      "provenance": { "kind": "document", "documentId": "doc_03", "excerpt": "TSH: 6.8 µIU/mL", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "lab_004",
+      "test": "Creatinine",
+      "value": 1.0,
+      "unit": "mg/dL",
+      "date": "2026-04-05",
+      "refRange": "0.6-1.2",
+      "provenance": { "kind": "document", "documentId": "doc_03", "excerpt": "Creatinine: 1.0 mg/dL", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "lab_005",
+      "test": "HbA1c",
+      "value": 7.6,
+      "unit": "%",
+      "date": "2026-09-12",
+      "refRange": "4.0-5.6",
+      "provenance": { "kind": "document", "documentId": "doc_05", "excerpt": "HbA1c: 7.6%", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "lab_006",
+      "test": "Fasting Blood Sugar (FBS)",
+      "value": 118,
+      "unit": "mg/dL",
+      "date": "2026-09-12",
+      "refRange": "70-99",
+      "provenance": { "kind": "document", "documentId": "doc_05", "excerpt": "FBS: 118 mg/dL", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "lab_007",
+      "test": "TSH",
+      "value": 3.1,
+      "unit": "µIU/mL",
+      "date": "2026-09-12",
+      "refRange": "0.4-4.0",
+      "provenance": { "kind": "document", "documentId": "doc_05", "excerpt": "TSH: 3.1 µIU/mL", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "lab_008",
+      "test": "LDL",
+      "value": 112,
+      "unit": "mg/dL",
+      "date": "2026-09-12",
+      "refRange": "<100",
+      "provenance": { "kind": "document", "documentId": "doc_05", "excerpt": "LDL: 112 mg/dL", "confidence": "high", "edited": false }
+    }
+  ],
+  "events": [
+    {
+      "id": "evt_001",
+      "type": "procedure",
+      "title": "Laparoscopic Cholecystectomy",
+      "date": "2025-01-15",
+      "facility": "General Hospital",
+      "provenance": { "kind": "document", "documentId": "doc_01", "excerpt": "Underwent laparoscopic cholecystectomy.", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "evt_002",
+      "type": "visit",
+      "title": "Follow-up with Dr. A. Iyer",
+      "date": "2026-03-10",
+      "facility": "Primary Care Clinic",
+      "provenance": { "kind": "document", "documentId": "doc_02", "excerpt": "Reviewed medications and advised continuation.", "confidence": "high", "edited": false }
+    },
+    {
+      "id": "evt_003",
+      "type": "visit",
+      "title": "Follow-up with Dr. R. Menon",
+      "date": "2026-07-20",
+      "facility": "Diabetology Specialty Center",
+      "provenance": { "kind": "document", "documentId": "doc_04", "excerpt": "Reviewed diabetes management, added glimepiride.", "confidence": "high", "edited": false }
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc_01",
+      "title": "Discharge Summary - General Hospital",
+      "docType": "discharge-summary",
+      "date": "2025-01-15",
+      "facility": "General Hospital",
+      "clinician": "Discharge Team",
+      "fileRef": "/demo/doc_01_discharge.pdf"
+    },
+    {
+      "id": "doc_02",
+      "title": "Prescription - Dr. A. Iyer",
+      "docType": "prescription",
+      "date": "2026-03-10",
+      "facility": "Primary Care Clinic",
+      "clinician": "Dr. A. Iyer",
+      "fileRef": "/demo/doc_02_gp_rx.jpg"
+    },
+    {
+      "id": "doc_03",
+      "title": "Laboratory Report - General Hospital",
+      "docType": "lab-report",
+      "date": "2026-04-05",
+      "facility": "General Hospital",
+      "clinician": "Lab Department",
+      "fileRef": "/demo/doc_03_labs.pdf"
+    },
+    {
+      "id": "doc_04",
+      "title": "Prescription - Dr. R. Menon",
+      "docType": "prescription",
+      "date": "2026-07-20",
+      "facility": "Diabetology Specialty Center",
+      "clinician": "Dr. R. Menon",
+      "fileRef": "/demo/doc_04_dia_rx.jpg"
+    },
+    {
+      "id": "doc_05",
+      "title": "Laboratory Report - General Hospital",
+      "docType": "lab-report",
+      "date": "2026-09-12",
+      "facility": "General Hospital",
+      "clinician": "Lab Department",
+      "fileRef": "/demo/doc_05_labs.jpg"
+    }
+  ],
+  "pendingReview": [],
+  "withheldCount": 0
+}
