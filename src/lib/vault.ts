@@ -110,6 +110,10 @@ export interface VaultState {
   updateItem: (id: string, patch: Partial<Medication | Allergy | Condition | LabResult | CareEvent>) => void;
   removeItem: (id: string) => void;
   setAllergyStatus: (s: 'unknown' | 'none-known' | 'has-allergies') => void;
+  addPatientReportedItem: (
+    type: 'medication' | 'allergy' | 'condition',
+    data: { name?: string; substance?: string; reaction?: string; dosage?: string; strength?: string }
+  ) => void;
   deleteAllData: () => Promise<void>;
 }
 
@@ -251,6 +255,64 @@ export const useVault = create<VaultState>()(
             allergyStatus: status,
           },
         });
+      },
+
+      addPatientReportedItem: (
+        type: 'medication' | 'allergy' | 'condition',
+        data: { name?: string; substance?: string; reaction?: string; dosage?: string; strength?: string }
+      ) => {
+        const state = get();
+        if (!state.record) return;
+
+        const id = `id_pr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        const provenance: Provenance = { kind: 'patient-reported' };
+
+        if (type === 'medication' && data.name) {
+          const med: Medication = {
+            id,
+            name: data.name,
+            ingredients: [],
+            strength: data.strength || null,
+            dosage: data.dosage || null,
+            prescriber: null,
+            prescribedOn: null,
+            status: 'active',
+            provenance,
+          };
+          set({
+            record: {
+              ...state.record,
+              medications: [...(state.record.medications || []), med],
+            },
+          });
+        } else if (type === 'allergy' && data.substance) {
+          const alg: Allergy = {
+            id,
+            substance: data.substance,
+            reaction: data.reaction || null,
+            provenance,
+          };
+          set({
+            record: {
+              ...state.record,
+              allergyStatus: 'has-allergies',
+              allergies: [...(state.record.allergies || []), alg],
+            },
+          });
+        } else if (type === 'condition' && data.name) {
+          const cond: Condition = {
+            id,
+            name: data.name,
+            since: null,
+            provenance,
+          };
+          set({
+            record: {
+              ...state.record,
+              conditions: [...(state.record.conditions || []), cond],
+            },
+          });
+        }
       },
 
       deleteAllData: async () => {

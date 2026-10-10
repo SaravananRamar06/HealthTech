@@ -3,6 +3,7 @@
 // Owner: P1. Patient Vault Dashboard
 // Client-only zustand store integration. Hydrates after mount.
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useVault } from '@/lib/vault';
 import { analyzeRecord } from '@/lib/analyze';
@@ -18,12 +19,23 @@ import {
 
 export default function VaultPage() {
   const mounted = useIsMounted();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addType, setAddType] = useState<'medication' | 'allergy' | 'condition'>('medication');
+  const [formData, setFormData] = useState({
+    name: '',
+    substance: '',
+    reaction: '',
+    strength: '',
+    dosage: '',
+  });
+
   const {
     record,
     loadDemo,
     updateItem,
     removeItem,
     setAllergyStatus,
+    addPatientReportedItem,
     deleteAllData,
   } = useVault();
 
@@ -131,6 +143,13 @@ export default function VaultPage() {
                 </Link>
                 <button
                   type="button"
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                >
+                  <span>{showAddForm ? '✕ Cancel' : '+ Add Item'}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     if (confirm('Load demo patient starting state?')) {
                       loadDemo('start');
@@ -155,6 +174,152 @@ export default function VaultPage() {
                 </button>
               </div>
             </div>
+
+            {/* Expandable Add Patient-Reported Item Form */}
+            {showAddForm && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addPatientReportedItem(addType, formData);
+                  setFormData({ name: '', substance: '', reaction: '', strength: '', dosage: '' });
+                  setShowAddForm(false);
+                }}
+                className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-indigo-900 uppercase tracking-wide">
+                      Add Patient-Reported Fact
+                    </span>
+                    <span className="rounded bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-800">
+                      Provenance: Patient-reported
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs">
+                    {(['medication', 'allergy', 'condition'] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setAddType(t)}
+                        className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                          addType === t
+                            ? 'bg-indigo-600 text-white shadow-2xs'
+                            : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                  {addType === 'medication' && (
+                    <>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                          Medication Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="e.g. Escitalopram"
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                          Strength
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.strength}
+                          onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
+                          placeholder="e.g. 10 mg"
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                          Dosage / Instructions
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.dosage}
+                          onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
+                          placeholder="e.g. 1 tablet daily at bedtime"
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {addType === 'allergy' && (
+                    <>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                          Allergen Substance *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.substance}
+                          onChange={(e) => setFormData({ ...formData, substance: e.target.value })}
+                          placeholder="e.g. Penicillin / Sulfa drugs"
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                          Known Reaction
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.reaction}
+                          onChange={(e) => setFormData({ ...formData, reaction: e.target.value })}
+                          placeholder="e.g. Urticaria, swelling, anaphylaxis"
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {addType === 'condition' && (
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        Condition / Diagnosis *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="e.g. Migraine / Seasonal Asthma"
+                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddForm(false)}
+                    className="rounded px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors shadow-2xs"
+                  >
+                    Save to Vault
+                  </button>
+                </div>
+              </form>
+            )}
 
             {/* Pending Review Banner */}
             {pendingCount > 0 && (
