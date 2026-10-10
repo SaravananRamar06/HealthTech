@@ -6,7 +6,6 @@ import { Lock, FileCheck } from 'lucide-react';
 export function SignatureOrb() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -16,8 +15,8 @@ export function SignatureOrb() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let width = (canvas.width = 460);
-    let height = (canvas.height = 460);
+    let width = (canvas.width = 440);
+    let height = (canvas.height = 440);
 
     const updateSize = () => {
       if (!canvas) return;
@@ -46,8 +45,13 @@ export function SignatureOrb() {
     let currentTiltX = 0;
     let currentTiltY = 0;
 
+    // Check operating system reduced-motion preference
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const render = () => {
-      t += 0.015;
+      t += prefersReducedMotion ? 0 : 0.014;
 
       // Smooth spring towards mouse position
       currentTiltX += (targetTiltX - currentTiltX) * 0.08;
@@ -59,19 +63,19 @@ export function SignatureOrb() {
       const radius = Math.min(width, height) * 0.32;
 
       ctx.save();
-      ctx.translate(cx + currentTiltX * 18, cy + currentTiltY * 18);
+      ctx.translate(cx + currentTiltX * 16, cy + currentTiltY * 16);
 
       // 1. Ambient outer glow
-      const outerGlow = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius * 1.7);
+      const outerGlow = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius * 1.6);
       outerGlow.addColorStop(0, 'rgba(57, 169, 154, 0.25)');
       outerGlow.addColorStop(0.5, 'rgba(221, 242, 232, 0.12)');
-      outerGlow.addColorStop(1, 'rgba(247, 248, 243, 0)');
+      outerGlow.addColorStop(1, 'rgba(248, 249, 245, 0)');
       ctx.fillStyle = outerGlow;
       ctx.beginPath();
-      ctx.arc(0, 0, radius * 1.7, 0, Math.PI * 2);
+      ctx.arc(0, 0, radius * 1.6, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. Three 3D orbital rings (ellipses tilted in 3D)
+      // 2. Three 3D orbital rings
       const rings = [
         { rx: radius * 1.35, ry: radius * 0.45, rot: 0.45 + currentTiltX * 0.2 },
         { rx: radius * 1.45, ry: radius * 0.4, rot: -0.65 - currentTiltY * 0.2 },
@@ -93,7 +97,6 @@ export function SignatureOrb() {
       });
 
       // 3. Central Translucent Glass Sphere
-      // Base back shadow
       const sphereGradient = ctx.createRadialGradient(
         -radius * 0.3 + currentTiltX * 10,
         -radius * 0.35 + currentTiltY * 10,
@@ -117,7 +120,7 @@ export function SignatureOrb() {
       ctx.shadowColor = 'transparent';
 
       // 4. Glowing pulsating core inside the sphere
-      const pulseScale = 0.88 + Math.sin(t * 1.8) * 0.12;
+      const pulseScale = prefersReducedMotion ? 0.92 : 0.88 + Math.sin(t * 1.8) * 0.12;
       const coreGradient = ctx.createRadialGradient(
         0,
         0,
@@ -162,7 +165,7 @@ export function SignatureOrb() {
       ctx.fillStyle = glassHighlight;
       ctx.fill();
 
-      // Thin rim light
+      // Rim light
       ctx.beginPath();
       ctx.arc(0, 0, radius - 1, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(221, 242, 232, 0.65)';
@@ -171,22 +174,21 @@ export function SignatureOrb() {
 
       // 6. Orbiting particles and data nodes
       particles.forEach((p) => {
-        p.angle += p.speed;
+        if (!prefersReducedMotion) {
+          p.angle += p.speed;
+        }
         const ring = rings[p.orbit];
 
-        // 3D coordinates on the rotated ellipse
         const cosA = Math.cos(p.angle);
         const sinA = Math.sin(p.angle);
         const ex = cosA * ring.rx;
         const ey = sinA * ring.ry;
 
-        // Apply rotation of the ring
         const cosR = Math.cos(ring.rot);
         const sinR = Math.sin(ring.rot);
         const px = ex * cosR - ey * sinR;
         const py = ex * sinR + ey * cosR;
 
-        // Depth perspective (z determines opacity and size)
         const z = -sinA;
         const depthAlpha = z > 0 ? 0.95 : 0.45;
         const depthScale = z > 0 ? 1.2 : 0.85;
@@ -206,7 +208,6 @@ export function SignatureOrb() {
         ctx.fill();
         ctx.shadowColor = 'transparent';
 
-        // Connect particle to center if in front
         if (z > 0.3) {
           ctx.beginPath();
           ctx.moveTo(0, 0);
@@ -218,31 +219,42 @@ export function SignatureOrb() {
       });
 
       ctx.restore();
-      animationFrameId = requestAnimationFrame(render);
+
+      // Only schedule next frame if not reduced motion or while actively tilting
+      if (!prefersReducedMotion) {
+        animationFrameId = requestAnimationFrame(render);
+      }
     };
 
     render();
 
+    // Pure coordinate updates without triggering React state re-renders
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
       targetTiltX = Math.max(-1, Math.min(1, x));
       targetTiltY = Math.max(-1, Math.min(1, y));
-      setMousePos({ x: targetTiltX, y: targetTiltY });
+      if (prefersReducedMotion) {
+        render();
+      }
     };
 
     const handleMouseLeave = () => {
       targetTiltX = 0;
       targetTiltY = 0;
-      setMousePos({ x: 0, y: 0 });
+      if (prefersReducedMotion) {
+        render();
+      }
     };
 
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
+    canvas.addEventListener('mousemove', handleMouseMove, { passive: true });
+    canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       window.removeEventListener('resize', updateSize);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
@@ -254,21 +266,20 @@ export function SignatureOrb() {
       ref={containerRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative flex items-center justify-center select-none"
+      className="relative flex items-center justify-center select-none w-full max-w-[420px] mx-auto py-2"
     >
       {/* 3D Canvas Sphere */}
       <canvas
         ref={canvasRef}
-        className="w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] max-w-full cursor-grab active:cursor-grabbing transition-transform duration-500 ease-out"
+        className="w-[280px] h-[280px] sm:w-[380px] sm:h-[380px] max-w-full cursor-grab active:cursor-grabbing transition-transform duration-500 ease-out"
         style={{
           transform: isHovered ? 'scale(1.02)' : 'scale(1)',
         }}
       />
 
-      {/* Floating Glass Badges */}
+      {/* Floating Glass Badges with Safe Mobile Constraints */}
       <div
-        className="absolute -top-2 -left-4 sm:left-2 flex items-center gap-2 rounded-xl border border-white/70 bg-white/80 px-3 py-1.5 shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-105"
-        style={{ transform: `translate(${mousePos.x * -6}px, ${mousePos.y * -6}px)` }}
+        className="absolute top-1 left-2 sm:left-4 flex items-center gap-2 rounded-xl border border-white/80 bg-white/85 px-3 py-1.5 shadow-xs backdrop-blur-md transition-all duration-300 hover:scale-105"
       >
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#ddf2e8] text-[#14382f]">
           <Lock className="h-3.5 w-3.5 text-[#2b8a7e]" />
@@ -280,20 +291,19 @@ export function SignatureOrb() {
       </div>
 
       <div
-        className="absolute bottom-4 -right-2 sm:right-4 flex items-center gap-2 rounded-xl border border-white/70 bg-white/80 px-3 py-1.5 shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-105"
-        style={{ transform: `translate(${mousePos.x * 6}px, ${mousePos.y * 6}px)` }}
+        className="absolute bottom-6 right-2 sm:right-4 flex items-center gap-2 rounded-xl border border-white/80 bg-white/85 px-3 py-1.5 shadow-xs backdrop-blur-md transition-all duration-300 hover:scale-105"
       >
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#14382f] text-[#39A99A]">
           <FileCheck className="h-3.5 w-3.5 text-[#3eb4a4]" />
         </div>
         <div className="text-left">
           <p className="text-[10px] font-bold text-[#14382f] uppercase tracking-wider">Provenance</p>
-          <p className="text-[9px] text-[#6e7771]">Verbatim document citations</p>
+          <p className="text-[9px] text-[#6e7771]">Verbatim excerpts</p>
         </div>
       </div>
 
       <div
-        className="absolute -bottom-3 left-6 sm:left-12 flex items-center gap-1.5 rounded-full border border-[#2b8a7e]/30 bg-[#14382f] px-3 py-1 text-white shadow-md backdrop-blur-md text-[11px]"
+        className="absolute bottom-0 left-6 sm:left-12 flex items-center gap-1.5 rounded-full border border-[#2b8a7e]/30 bg-[#14382f] px-3 py-1 text-white shadow-md backdrop-blur-md text-[11px]"
       >
         <span className="h-2 w-2 rounded-full bg-[#39b5a4] animate-pulse" />
         <span className="font-semibold text-[#ddf2e8]">Zero-Knowledge Server</span>

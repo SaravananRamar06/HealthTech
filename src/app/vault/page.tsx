@@ -31,7 +31,7 @@ export default function VaultPage() {
   const mounted = useIsMounted();
   const [showAddForm, setShowAddForm] = useState(false);
   const [addType, setAddType] = useState<'medication' | 'allergy' | 'condition'>('medication');
-  const [activeTab, setActiveTab] = useState<'all' | 'medications' | 'allergies' | 'labs' | 'timeline'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'medications' | 'allergies' | 'conditions' | 'labs' | 'timeline'>('all');
   const [formData, setFormData] = useState({
     name: '',
     substance: '',
@@ -180,6 +180,8 @@ export default function VaultPage() {
                   <PlusCircle className="h-3.5 w-3.5 text-[#2b8a7e]" />
                   <span>{showAddForm ? 'Cancel' : 'Add Item'}</span>
                 </button>
+
+                <div className="hidden sm:block h-6 w-px bg-[#d6ded5] mx-0.5" />
 
                 <button
                   type="button"
@@ -397,6 +399,7 @@ export default function VaultPage() {
               { id: 'all', label: 'All Records' },
               { id: 'medications', label: `Medications (${record.medications.filter((m) => m.status === 'active').length})` },
               { id: 'allergies', label: `Allergies (${record.allergies.length})` },
+              { id: 'conditions', label: `Conditions (${record.conditions.length})` },
               { id: 'labs', label: `Labs (${record.labs.length})` },
               { id: 'timeline', label: `Timeline (${record.events.length})` },
             ].map((tab) => (
@@ -455,7 +458,7 @@ export default function VaultPage() {
           )}
 
           {/* 3. Conditions Section */}
-          {(activeTab === 'all') && (
+          {(activeTab === 'all' || activeTab === 'conditions') && (
             <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
                 <h2 className="text-base font-bold text-[#14382f]">

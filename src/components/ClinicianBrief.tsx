@@ -10,7 +10,7 @@ import {
   Timeline,
   FlagList,
 } from '@/components/record';
-import { ShieldCheck, Clock, AlertTriangle, Stethoscope } from 'lucide-react';
+import { ShieldCheck, Clock, AlertTriangle, Stethoscope, Printer } from 'lucide-react';
 
 export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
   const {
@@ -79,7 +79,16 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
             </div>
           </div>
 
-          <div className="text-right text-xs text-[#6e7771] space-y-1">
+          <div className="flex flex-col items-start sm:items-end gap-2 text-xs text-[#6e7771]">
+            <button
+              type="button"
+              onClick={() => typeof window !== 'undefined' && window.print()}
+              className="print:hidden inline-flex items-center gap-1.5 rounded-xl border border-[#d6ded5] bg-white px-3.5 py-1.5 font-bold text-[#14382f] shadow-2xs hover:bg-[#f1f4ee] transition-all"
+              title="Print or Save as PDF"
+            >
+              <Printer className="h-3.5 w-3.5 text-[#2b8a7e]" />
+              <span>Print / Save PDF</span>
+            </button>
             <p>Shared: <span className="font-mono text-[#1c2420]">{createdDate}</span></p>
             <p className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 font-bold text-amber-900 border border-amber-200">
               <Clock className="h-3 w-3 text-amber-700" />

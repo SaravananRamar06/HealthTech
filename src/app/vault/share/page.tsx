@@ -478,47 +478,91 @@ export default function SharePage() {
               </div>
             )}
 
-            {/* Sections summary */}
-            <div className="space-y-2 border-t border-[#f1f4ee] pt-2">
-              {selectedSections.includes('allergies') && (
-                <div className="flex items-start justify-between text-[11px]">
-                  <span className="font-bold text-[#14382f]">Allergies:</span>
-                  <span className="text-right text-[#525d56]">
-                    {currentRecord?.allergies?.length || 0} documented
+            {/* Sections realistic live preview */}
+            <div className="space-y-3 border-t border-[#f1f4ee] pt-3">
+              {/* Allergies live preview */}
+              <div>
+                <div className="flex items-center justify-between text-[11px] font-bold text-[#14382f] mb-1">
+                  <span>Allergies:</span>
+                  <span className="text-[10px] text-[#6e7771]">
+                    {selectedSections.includes('allergies') ? 'Included' : 'Withheld'}
                   </span>
                 </div>
-              )}
+                {selectedSections.includes('allergies') ? (
+                  currentRecord?.allergies && currentRecord.allergies.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {currentRecord.allergies.map((a) => (
+                        <span
+                          key={a.id}
+                          className="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-800 border border-rose-200"
+                        >
+                          ⚠️ {a.substance} {a.reaction ? `(${a.reaction})` : ''}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-[#6e7771] italic">No allergies documented</span>
+                  )
+                ) : (
+                  <span className="text-[10px] text-[#a0aaa3] italic">Allergies section excluded by patient</span>
+                )}
+              </div>
 
-              {selectedSections.includes('medications') && (
-                <div className="flex items-start justify-between text-[11px]">
-                  <span className="font-bold text-[#14382f]">Medications:</span>
-                  <span className="text-right text-[#525d56]">
-                    {(currentRecord?.medications?.filter((m) => m.status === 'active' && !excludedIds.includes(m.id)) || []).length} active shared
+              {/* Medications live preview */}
+              <div>
+                <div className="flex items-center justify-between text-[11px] font-bold text-[#14382f] mb-1">
+                  <span>Current Medications:</span>
+                  <span className="text-[10px] text-[#6e7771]">
+                    {selectedSections.includes('medications') ? 'Included' : 'Withheld'}
                   </span>
                 </div>
-              )}
+                {selectedSections.includes('medications') ? (
+                  <div className="space-y-1">
+                    {currentRecord?.medications
+                      ?.filter((m) => m.status === 'active' && !excludedIds.includes(m.id))
+                      .map((m) => (
+                        <div
+                          key={m.id}
+                          className="flex items-center justify-between rounded-md bg-[#f8f9f5] px-2 py-1 border border-[#e2e7e0] text-[10px]"
+                        >
+                          <span className="font-semibold text-[#14382f]">{m.name}</span>
+                          <span className="text-[#6e7771]">{m.dosage || m.strength || 'Active'}</span>
+                        </div>
+                      ))}
+                    {currentRecord?.medications?.filter((m) => m.status === 'active' && !excludedIds.includes(m.id)).length === 0 && (
+                      <span className="text-[10px] text-[#6e7771] italic">No active medicines included</span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-[#a0aaa3] italic">Medications section excluded by patient</span>
+                )}
+              </div>
 
+              {/* Lab trends live preview */}
               {selectedSections.includes('labs') && (
-                <div className="flex items-start justify-between text-[11px]">
-                  <span className="font-bold text-[#14382f]">Lab Trends:</span>
-                  <span className="text-right text-[#525d56]">
-                    HbA1c &amp; TSH included
-                  </span>
-                </div>
-              )}
-
-              {selectedSections.includes('events') && (
-                <div className="flex items-start justify-between text-[11px]">
-                  <span className="font-bold text-[#14382f]">Timeline:</span>
-                  <span className="text-right text-[#525d56]">
-                    {currentRecord?.events?.length || 0} events
-                  </span>
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-bold text-[#14382f] mb-1">
+                    <span>Lab Results &amp; Trends:</span>
+                    <span className="text-[10px] text-[#2b8a7e]">Included</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                    <div className="rounded-md bg-[#eef8f4] p-1.5 border border-[#cbe2da]">
+                      <span className="text-[#6e7771] block">HbA1c (Sep 2026)</span>
+                      <strong className="text-[#14382f] font-mono text-xs">7.6 %</strong>
+                      <span className="text-[9px] text-emerald-700 block">↓ Down from 8.4%</span>
+                    </div>
+                    <div className="rounded-md bg-[#eef8f4] p-1.5 border border-[#cbe2da]">
+                      <span className="text-[#6e7771] block">TSH (Sep 2026)</span>
+                      <strong className="text-[#14382f] font-mono text-xs">3.1 µIU/mL</strong>
+                      <span className="text-[9px] text-emerald-700 block">Normal range</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
 
             <div className="rounded-lg bg-[#f8f9f5] p-2 text-[10px] text-[#6e7771] text-center border border-[#e2e7e0]">
-              Ciphertext is scoped prior to encryption. Withheld items cannot leak.
+              Scoped prior to encryption. Withheld items cannot leak into ciphertext.
             </div>
           </div>
         </section>
