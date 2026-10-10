@@ -16,11 +16,22 @@ import {
   Timeline,
   FlagList,
 } from '@/components/record';
+import {
+  FileText,
+  Share2,
+  PlusCircle,
+  RotateCcw,
+  Trash2,
+  ShieldCheck,
+  AlertCircle,
+  Sparkles,
+} from 'lucide-react';
 
 export default function VaultPage() {
   const mounted = useIsMounted();
   const [showAddForm, setShowAddForm] = useState(false);
   const [addType, setAddType] = useState<'medication' | 'allergy' | 'condition'>('medication');
+  const [activeTab, setActiveTab] = useState<'all' | 'medications' | 'allergies' | 'labs' | 'timeline'>('all');
   const [formData, setFormData] = useState({
     name: '',
     substance: '',
@@ -41,8 +52,11 @@ export default function VaultPage() {
 
   if (!mounted) {
     return (
-      <main className="mx-auto flex min-h-[50vh] max-w-4xl items-center justify-center p-6">
-        <p className="text-sm text-zinc-500">Loading your private vault...</p>
+      <main className="mx-auto flex min-h-[60vh] max-w-5xl items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#14382f] border-t-transparent" />
+          <p className="text-sm font-medium text-[#525d56]">Accessing local encrypted vault...</p>
+        </div>
       </main>
     );
   }
@@ -53,26 +67,31 @@ export default function VaultPage() {
   const pendingCount = record?.pendingReview?.length || 0;
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6">
       {/* Disclaimer Top Banner */}
-      <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 flex flex-wrap items-center justify-between gap-2">
-        <span>
-          Synthetic Demonstration Data · Local browser storage only · <strong>Do not enter real medical records</strong>
+      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-amber-300/80 bg-amber-50/80 px-4 py-2.5 text-xs text-amber-950 shadow-2xs backdrop-blur-xs">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 shrink-0 text-amber-700" />
+          <span>
+            Synthetic Demonstration Data · Local browser storage only · <strong>Do not enter real medical records</strong>
+          </span>
+        </div>
+        <span className="font-mono text-[11px] font-bold text-amber-800 bg-amber-200/60 rounded px-2 py-0.5">
+          Prototype
         </span>
-        <span className="font-mono text-[11px] text-amber-800">Hackathon Prototype</span>
       </div>
 
       {!record ? (
         /* Empty State */
-        <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-xs space-y-6">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 text-2xl font-bold">
-            🏥
+        <div className="glass-panel rounded-3xl p-10 text-center shadow-xs space-y-6">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#ddf2e8] text-[#14382f] text-2xl font-bold shadow-xs">
+            <ShieldCheck className="h-8 w-8 text-[#2b8a7e]" />
           </div>
 
           <div className="max-w-md mx-auto space-y-2">
-            <h2 className="text-xl font-bold text-zinc-900">Your Health Vault is Empty</h2>
-            <p className="text-sm text-zinc-600 leading-relaxed">
-              Start by importing medical records, or load the synthetic demo patient (Meena Krishnan) to explore the workflow.
+            <h2 className="text-2xl font-bold tracking-tight text-[#14382f]">Your Health Vault is Empty</h2>
+            <p className="text-sm text-[#525d56] leading-relaxed">
+              Import medical records from photos or PDFs, or load the synthetic demo patient (Meena Krishnan) to explore the clinical reconciliation engine.
             </p>
           </div>
 
@@ -80,20 +99,20 @@ export default function VaultPage() {
             <button
               type="button"
               onClick={() => loadDemo('start')}
-              className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+              className="rounded-xl bg-[#14382f] px-5 py-3 text-sm font-semibold text-[#ddf2e8] shadow-sm hover:bg-[#1a473c] transition-all"
             >
               Load Demo (Unreconciled Start)
             </button>
             <button
               type="button"
               onClick={() => loadDemo('complete')}
-              className="rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="rounded-xl border border-[#d6ded5] bg-white px-5 py-3 text-sm font-semibold text-[#202823] hover:bg-[#f1f4ee] transition-all"
             >
               Load Demo (Fully Reconciled)
             </button>
             <Link
               href="/vault/import"
-              className="rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="rounded-xl border border-[#d6ded5] bg-white px-5 py-3 text-sm font-semibold text-[#202823] hover:bg-[#f1f4ee] transition-all"
             >
               Import Documents
             </Link>
@@ -102,75 +121,92 @@ export default function VaultPage() {
       ) : (
         /* Populated Vault */
         <>
-          {/* Patient Header & Primary Actions */}
-          <header className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-4">
+          {/* Patient Header & Quick Bar */}
+          <header className="glass-panel rounded-2xl p-6 shadow-xs space-y-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                    PATIENT VAULT
-                  </span>
-                  <span className="text-xs text-zinc-400">Stored on your device</span>
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#14382f] text-[#ddf2e8] text-xl font-bold shadow-xs">
+                  {record.profile.name.charAt(0)}
                 </div>
-                <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900">
-                  {record.profile.name}
-                </h1>
-                <p className="text-xs text-zinc-500">
-                  DOB: {record.profile.dateOfBirth} · {record.profile.sex}
-                  {record.profile.emergencyContact && (
-                    <span> · Emergency Contact: {record.profile.emergencyContact.name} ({record.profile.emergencyContact.phone})</span>
-                  )}
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
+                      PATIENT VAULT
+                    </span>
+                    <span className="text-xs text-[#6e7771]">Encrypted on device</span>
+                  </div>
+                  <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14382f]">
+                    {record.profile.name}
+                  </h1>
+                  <p className="text-xs text-[#525d56] mt-0.5">
+                    DOB: <strong className="text-[#1c2420]">{record.profile.dateOfBirth}</strong> · Sex: <strong className="text-[#1c2420]">{record.profile.sex}</strong>
+                    {record.profile.emergencyContact && (
+                      <span className="ml-2">
+                        · Emergency Contact: <strong>{record.profile.emergencyContact.name}</strong> ({record.profile.emergencyContact.phone})
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
 
+              {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href="/vault/import"
-                  className="relative inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+                  className="relative inline-flex items-center gap-1.5 rounded-xl bg-[#14382f] px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#1a473c] transition-all"
                 >
+                  <FileText className="h-3.5 w-3.5 text-[#3eb4a4]" />
                   <span>Import Records</span>
                   {pendingCount > 0 && (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
                       {pendingCount}
                     </span>
                   )}
                 </Link>
+
                 <Link
                   href="/vault/share"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#d6ded5] bg-white px-4 py-2.5 text-xs font-bold text-[#202823] hover:bg-[#f1f4ee] transition-all shadow-2xs"
                 >
+                  <Share2 className="h-3.5 w-3.5 text-[#2b8a7e]" />
                   <span>Share Summary</span>
                 </Link>
+
                 <button
                   type="button"
                   onClick={() => setShowAddForm(!showAddForm)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#39A99A]/40 bg-[#ddf2e8]/70 px-3.5 py-2.5 text-xs font-bold text-[#14382f] hover:bg-[#ccebe0] transition-all shadow-2xs"
                 >
-                  <span>{showAddForm ? '✕ Cancel' : '+ Add Item'}</span>
+                  <PlusCircle className="h-3.5 w-3.5 text-[#2b8a7e]" />
+                  <span>{showAddForm ? 'Cancel' : 'Add Item'}</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
-                    if (confirm('Load demo patient starting state?')) {
+                    if (confirm('Reset to Meena Krishnan starting demo state?')) {
                       loadDemo('start');
                     }
                   }}
-                  className="rounded-lg border border-zinc-200 px-2.5 py-2 text-xs text-zinc-600 hover:bg-zinc-100 transition-colors"
-                  title="Reset to initial unreviewed state"
+                  className="inline-flex items-center gap-1 rounded-xl border border-[#e2e7e0] bg-white px-2.5 py-2.5 text-xs text-[#525d56] hover:bg-[#f1f4ee] transition-all"
+                  title="Reset Demo State"
                 >
-                  Reset Demo
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Reset</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
-                    if (confirm('Are you sure you want to delete all stored health data and active shares from your browser?')) {
+                    if (confirm('Delete all stored health records and shares from this browser?')) {
                       deleteAllData();
                     }
                   }}
-                  className="rounded-lg border border-rose-200 px-2.5 py-2 text-xs text-rose-600 hover:bg-rose-50 transition-colors"
-                  title="Wipe local storage and indexedDB"
+                  className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-white px-2.5 py-2.5 text-xs text-rose-700 hover:bg-rose-50 transition-all"
+                  title="Wipe Storage"
                 >
-                  Delete All
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Wipe</span>
                 </button>
               </div>
             </div>
@@ -184,27 +220,28 @@ export default function VaultPage() {
                   setFormData({ name: '', substance: '', reaction: '', strength: '', dosage: '' });
                   setShowAddForm(false);
                 }}
-                className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-3"
+                className="mt-4 rounded-2xl border border-[#b8decb] bg-[#f0f9f5] p-5 space-y-4 shadow-xs"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#ccebe0] pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-indigo-900 uppercase tracking-wide">
+                    <Sparkles className="h-4 w-4 text-[#2b8a7e]" />
+                    <span className="text-xs font-bold text-[#14382f] uppercase tracking-wide">
                       Add Patient-Reported Fact
                     </span>
-                    <span className="rounded bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-800">
+                    <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-[10px] font-bold text-[#14382f]">
                       Provenance: Patient-reported
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs">
+                  <div className="flex items-center gap-1.5 text-xs">
                     {(['medication', 'allergy', 'condition'] as const).map((t) => (
                       <button
                         key={t}
                         type="button"
                         onClick={() => setAddType(t)}
-                        className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                        className={`rounded-lg px-3 py-1 text-xs font-bold capitalize transition-all ${
                           addType === t
-                            ? 'bg-indigo-600 text-white shadow-2xs'
-                            : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                            ? 'bg-[#14382f] text-white shadow-xs'
+                            : 'bg-white text-[#525d56] border border-[#d6ded5] hover:bg-[#f1f4ee]'
                         }`}
                       >
                         {t}
@@ -213,11 +250,11 @@ export default function VaultPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                <div className="grid gap-3.5 sm:grid-cols-2 text-xs">
                   {addType === 'medication' && (
                     <>
                       <div>
-                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        <label className="block text-[11px] font-bold text-[#14382f] mb-1">
                           Medication Name *
                         </label>
                         <input
@@ -226,11 +263,11 @@ export default function VaultPage() {
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="e.g. Escitalopram"
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                          className="w-full rounded-xl border border-[#d6ded5] bg-white px-3.5 py-2 text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        <label className="block text-[11px] font-bold text-[#14382f] mb-1">
                           Strength
                         </label>
                         <input
@@ -238,11 +275,11 @@ export default function VaultPage() {
                           value={formData.strength}
                           onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
                           placeholder="e.g. 10 mg"
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                          className="w-full rounded-xl border border-[#d6ded5] bg-white px-3.5 py-2 text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        <label className="block text-[11px] font-bold text-[#14382f] mb-1">
                           Dosage / Instructions
                         </label>
                         <input
@@ -250,7 +287,7 @@ export default function VaultPage() {
                           value={formData.dosage}
                           onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
                           placeholder="e.g. 1 tablet daily at bedtime"
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                          className="w-full rounded-xl border border-[#d6ded5] bg-white px-3.5 py-2 text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
                         />
                       </div>
                     </>
@@ -259,7 +296,7 @@ export default function VaultPage() {
                   {addType === 'allergy' && (
                     <>
                       <div>
-                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        <label className="block text-[11px] font-bold text-[#14382f] mb-1">
                           Allergen Substance *
                         </label>
                         <input
@@ -268,11 +305,11 @@ export default function VaultPage() {
                           value={formData.substance}
                           onChange={(e) => setFormData({ ...formData, substance: e.target.value })}
                           placeholder="e.g. Penicillin / Sulfa drugs"
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                          className="w-full rounded-xl border border-[#d6ded5] bg-white px-3.5 py-2 text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        <label className="block text-[11px] font-bold text-[#14382f] mb-1">
                           Known Reaction
                         </label>
                         <input
@@ -280,7 +317,7 @@ export default function VaultPage() {
                           value={formData.reaction}
                           onChange={(e) => setFormData({ ...formData, reaction: e.target.value })}
                           placeholder="e.g. Urticaria, swelling, anaphylaxis"
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                          className="w-full rounded-xl border border-[#d6ded5] bg-white px-3.5 py-2 text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
                         />
                       </div>
                     </>
@@ -288,7 +325,7 @@ export default function VaultPage() {
 
                   {addType === 'condition' && (
                     <div className="sm:col-span-2">
-                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                      <label className="block text-[11px] font-bold text-[#14382f] mb-1">
                         Condition / Diagnosis *
                       </label>
                       <input
@@ -297,23 +334,23 @@ export default function VaultPage() {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="e.g. Migraine / Seasonal Asthma"
-                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-zinc-900 focus:border-indigo-500 focus:outline-none"
+                        className="w-full rounded-xl border border-[#d6ded5] bg-white px-3.5 py-2 text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
                       />
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-1">
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#ccebe0]">
                   <button
                     type="button"
                     onClick={() => setShowAddForm(false)}
-                    className="rounded px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-100"
+                    className="rounded-xl px-4 py-2 text-xs font-semibold text-[#525d56] hover:bg-white"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors shadow-2xs"
+                    className="rounded-xl bg-[#14382f] px-5 py-2 text-xs font-bold text-white shadow-2xs hover:bg-[#1a473c] transition-colors"
                   >
                     Save to Vault
                   </button>
@@ -321,20 +358,27 @@ export default function VaultPage() {
               </form>
             )}
 
-            {/* Pending Review Banner */}
+            {/* Pending Review Queue Banner */}
             {pendingCount > 0 && (
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50/90 p-3 text-xs text-amber-950">
-                <div>
-                  <span className="font-semibold">{pendingCount} item(s) awaiting your review!</span>
-                  <p className="text-amber-800 text-[11px] mt-0.5">
-                    Extracted facts are held in a private staging queue and will never be shared until you confirm them.
-                  </p>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50/90 p-4 text-xs text-amber-950 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-200/80 text-amber-900 font-bold">
+                    {pendingCount}
+                  </div>
+                  <div>
+                    <span className="font-bold text-sm text-amber-950 block">
+                      {pendingCount} item(s) awaiting your review
+                    </span>
+                    <p className="text-amber-900/80 text-[11px] mt-0.5">
+                      Extracted facts are held in your private staging queue and will never be shared until you confirm them.
+                    </p>
+                  </div>
                 </div>
                 <Link
                   href="/vault/import"
-                  className="rounded bg-amber-800 px-3 py-1 text-xs font-medium text-white hover:bg-amber-900 transition-colors shrink-0"
+                  className="rounded-xl bg-amber-900 px-4 py-2 text-xs font-bold text-white hover:bg-amber-950 transition-colors shadow-2xs shrink-0"
                 >
-                  Review Queue →
+                  Open Review Queue →
                 </Link>
               </div>
             )}
@@ -342,102 +386,153 @@ export default function VaultPage() {
 
           {/* Clinical Reconciliation Flags */}
           {flags.length > 0 && (
-            <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs">
+            <section className="glass-panel rounded-2xl p-6 shadow-xs">
               <FlagList flags={flags} />
             </section>
           )}
 
-          {/* 1. Allergies */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-3">
-            <h2 className="text-base font-bold text-zinc-900 flex items-center justify-between">
-              <span>Allergies & Adverse Drug Reactions</span>
-              <span className="text-xs font-normal text-zinc-500">
-                {record.allergies.length} documented
-              </span>
-            </h2>
-            <AllergyList
-              allergies={record.allergies}
-              status={record.allergyStatus}
-              onStatusChange={setAllergyStatus}
-              onRemove={removeItem}
-            />
-          </section>
+          {/* Section Filter Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+            {[
+              { id: 'all', label: 'All Records' },
+              { id: 'medications', label: `Medications (${record.medications.filter((m) => m.status === 'active').length})` },
+              { id: 'allergies', label: `Allergies (${record.allergies.length})` },
+              { id: 'labs', label: `Labs (${record.labs.length})` },
+              { id: 'timeline', label: `Timeline (${record.events.length})` },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`rounded-xl px-3.5 py-2 font-bold whitespace-nowrap transition-all shadow-2xs ${
+                  activeTab === tab.id
+                    ? 'bg-[#14382f] text-[#ddf2e8] shadow-xs'
+                    : 'bg-white text-[#525d56] border border-[#d6ded5] hover:bg-[#f1f4ee]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-          {/* 2. Medications */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-3">
-            <h2 className="text-base font-bold text-zinc-900 flex items-center justify-between">
-              <span>Current & Prescribed Medications</span>
-              <span className="text-xs font-normal text-zinc-500">
-                {record.medications.filter((m) => m.status === 'active').length} active
-              </span>
-            </h2>
-            <MedicineList
-              medications={record.medications}
-              onStop={(id) => updateItem(id, { status: 'stopped' })}
-              onRemove={removeItem}
-            />
-          </section>
+          {/* 1. Allergies Section */}
+          {(activeTab === 'all' || activeTab === 'allergies') && (
+            <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+                <h2 className="text-base font-bold text-[#14382f]">
+                  Allergies &amp; Adverse Drug Reactions
+                </h2>
+                <span className="text-xs text-[#6e7771]">
+                  {record.allergies.length} documented
+                </span>
+              </div>
+              <AllergyList
+                allergies={record.allergies}
+                status={record.allergyStatus}
+                onStatusChange={setAllergyStatus}
+                onRemove={removeItem}
+              />
+            </section>
+          )}
 
-          {/* 3. Conditions */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-3">
-            <h2 className="text-base font-bold text-zinc-900 flex items-center justify-between">
-              <span>Documented Conditions</span>
-              <span className="text-xs font-normal text-zinc-500">
-                {record.conditions.length} recorded
-              </span>
-            </h2>
-            <ConditionList conditions={record.conditions} />
-          </section>
+          {/* 2. Medications Section */}
+          {(activeTab === 'all' || activeTab === 'medications') && (
+            <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+                <h2 className="text-base font-bold text-[#14382f]">
+                  Current &amp; Prescribed Medications
+                </h2>
+                <span className="text-xs text-[#6e7771]">
+                  {record.medications.filter((m) => m.status === 'active').length} active
+                </span>
+              </div>
+              <MedicineList
+                medications={record.medications}
+                onStop={(id) => updateItem(id, { status: 'stopped' })}
+                onRemove={removeItem}
+              />
+            </section>
+          )}
 
-          {/* 4. Lab Results */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-3">
-            <h2 className="text-base font-bold text-zinc-900 flex items-center justify-between">
-              <span>Laboratory Results & Trends</span>
-              <span className="text-xs font-normal text-zinc-500">
-                {record.labs.length} tests recorded
-              </span>
-            </h2>
-            <LabTrend labs={record.labs} onRemove={removeItem} />
-          </section>
+          {/* 3. Conditions Section */}
+          {(activeTab === 'all') && (
+            <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+                <h2 className="text-base font-bold text-[#14382f]">
+                  Documented Conditions
+                </h2>
+                <span className="text-xs text-[#6e7771]">
+                  {record.conditions.length} recorded
+                </span>
+              </div>
+              <ConditionList conditions={record.conditions} />
+            </section>
+          )}
 
-          {/* 5. Care Events */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-3">
-            <h2 className="text-base font-bold text-zinc-900 flex items-center justify-between">
-              <span>Care Timeline & Procedures</span>
-              <span className="text-xs font-normal text-zinc-500">
-                {record.events.length} events
-              </span>
-            </h2>
-            <Timeline events={record.events} onRemove={removeItem} />
-          </section>
+          {/* 4. Lab Results Section */}
+          {(activeTab === 'all' || activeTab === 'labs') && (
+            <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+                <h2 className="text-base font-bold text-[#14382f]">
+                  Laboratory Results &amp; Trends
+                </h2>
+                <span className="text-xs text-[#6e7771]">
+                  {record.labs.length} tests recorded
+                </span>
+              </div>
+              <LabTrend labs={record.labs} onRemove={removeItem} />
+            </section>
+          )}
+
+          {/* 5. Care Events Timeline */}
+          {(activeTab === 'all' || activeTab === 'timeline') && (
+            <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+                <h2 className="text-base font-bold text-[#14382f]">
+                  Care Timeline &amp; Encounters
+                </h2>
+                <span className="text-xs text-[#6e7771]">
+                  {record.events.length} events
+                </span>
+              </div>
+              <Timeline events={record.events} onRemove={removeItem} />
+            </section>
+          )}
 
           {/* 6. Source Documents on File */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-3">
-            <h2 className="text-base font-bold text-zinc-900 flex items-center justify-between">
-              <span>Source Documents ({record.documents.length})</span>
-              <Link href="/vault/import" className="text-xs text-indigo-600 hover:underline">
-                + Add more
+          <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+              <h2 className="text-base font-bold text-[#14382f]">
+                Source Documents on File ({record.documents.length})
+              </h2>
+              <Link
+                href="/vault/import"
+                className="text-xs font-bold text-[#2b8a7e] hover:underline"
+              >
+                + Add more documents
               </Link>
-            </h2>
+            </div>
 
             {record.documents.length === 0 ? (
-              <p className="text-sm text-zinc-500 italic">No documents attached yet.</p>
+              <p className="text-sm text-[#6e7771] italic py-2">No documents attached yet.</p>
             ) : (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {record.documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="flex flex-col justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs"
+                    className="flex flex-col justify-between rounded-xl border border-[#e2e7e0] bg-[#f8f9f5] p-3.5 text-xs shadow-2xs hover:border-[#b8c9bf] transition-colors"
                   >
                     <div>
-                      <span className="font-semibold text-zinc-900 block truncate">{doc.title}</span>
-                      <p className="text-zinc-500 mt-0.5">
+                      <span className="font-bold text-[#14382f] block truncate">{doc.title}</span>
+                      <p className="text-[#6e7771] mt-0.5">
                         {doc.docType} · {doc.date || 'No date'}
                         {doc.facility ? ` · ${doc.facility}` : ''}
                       </p>
                     </div>
                     {doc.clinician && (
-                      <p className="text-[11px] text-zinc-400 mt-2">Clinician: {doc.clinician}</p>
+                      <p className="text-[11px] text-[#859088] mt-2 pt-2 border-t border-[#e8eee6]">
+                        Prescriber / Clinician: {doc.clinician}
+                      </p>
                     )}
                   </div>
                 ))}

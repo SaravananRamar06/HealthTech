@@ -16,6 +16,18 @@ import type {
   ShareSection,
   ShareSelection,
 } from '@/lib/types';
+import {
+  Lock,
+  Copy,
+  Check,
+  ExternalLink,
+  Clock,
+  Eye,
+  Trash2,
+  ArrowLeft,
+  Sparkles,
+  AlertTriangle,
+} from 'lucide-react';
 
 function getSharesSnapshot(): string {
   if (typeof window === 'undefined') return '[]';
@@ -90,8 +102,11 @@ export default function SharePage() {
 
   if (!mounted) {
     return (
-      <main className="mx-auto flex min-h-[50vh] max-w-4xl items-center justify-center p-6">
-        <p className="text-sm text-zinc-500">Loading share wizard...</p>
+      <main className="mx-auto flex min-h-[60vh] max-w-5xl items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#14382f] border-t-transparent" />
+          <p className="text-sm font-medium text-[#525d56]">Loading share studio...</p>
+        </div>
       </main>
     );
   }
@@ -249,24 +264,28 @@ export default function SharePage() {
   );
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Link href="/vault" className="text-xs text-zinc-500 hover:text-zinc-800">
-              ← Return to Vault
+            <Link
+              href="/vault"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#525d56] hover:text-[#14382f] transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Return to Vault</span>
             </Link>
-            <span className="text-zinc-300">/</span>
-            <span className="rounded bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+            <span className="text-[#ccebe0]">/</span>
+            <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
               CLIENT-SIDE ENCRYPTION
             </span>
           </div>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900">
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14382f]">
             Share Health Brief
           </h1>
-          <p className="text-xs text-zinc-500">
-            Encrypted with AES-256-GCM in your browser. The server stores only ciphertext and never receives the key.
+          <p className="text-xs text-[#525d56] mt-0.5">
+            Encrypted with AES-256-GCM in your browser. The server receives only ciphertext and never sees the key.
           </p>
         </div>
 
@@ -274,175 +293,278 @@ export default function SharePage() {
           <button
             type="button"
             onClick={() => loadDemo('complete')}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+            className="rounded-xl bg-[#14382f] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#1a473c] transition-colors"
           >
             Load Demo Patient
           </button>
         )}
       </div>
 
-      {/* Share Creator Wizard */}
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-5">
-        <h2 className="text-base font-bold text-zinc-900">Create Scoped Share Link</h2>
+      {/* Two Column Layout: Wizard + Live Clinician Preview */}
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+        {/* Left Column: Share Creator Wizard */}
+        <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-5 lg:col-span-7">
+          <h2 className="text-base font-bold text-[#14382f] flex items-center gap-2">
+            <Lock className="h-4 w-4 text-[#2b8a7e]" />
+            <span>Configure Scoped Share</span>
+          </h2>
 
-        {/* 1. Recipient & Expiry */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="text-xs font-semibold text-zinc-700 block mb-1">
-              Recipient Name or Clinician Label
-            </label>
-            <input
-              type="text"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              placeholder="e.g. Dr. S. Rao (Endocrinology)"
-              className="w-full rounded-lg border border-zinc-300 p-2 text-xs focus:border-indigo-500 focus:outline-hidden"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-zinc-700 block mb-1">
-              Link Expiry Duration
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['1h', '24h', '7d'] as const).map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => setExpiryOption(opt)}
-                  className={`rounded-lg py-2 text-xs font-medium border transition-colors ${
-                    expiryOption === opt
-                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-bold'
-                      : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'
-                  }`}
-                >
-                  {opt === '1h' ? '1 Hour' : opt === '24h' ? '24 Hours (Default)' : '7 Days'}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Section Inclusions */}
-        <div>
-          <label className="text-xs font-semibold text-zinc-700 block mb-2">
-            Select Sections to Include in Share
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { id: 'allergies', label: 'Allergies' },
-              { id: 'medications', label: 'Medications' },
-              { id: 'conditions', label: 'Conditions' },
-              { id: 'labs', label: 'Lab Results' },
-              { id: 'events', label: 'Care Events' },
-              { id: 'emergencyContact', label: 'Emergency Contact' },
-            ].map((sec) => {
-              const active = selectedSections.includes(sec.id as ShareSection);
-              return (
-                <button
-                  key={sec.id}
-                  type="button"
-                  onClick={() => toggleSection(sec.id as ShareSection)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors ${
-                    active
-                      ? 'bg-zinc-900 border-zinc-900 text-white'
-                      : 'bg-zinc-50 border-zinc-200 text-zinc-500 hover:bg-zinc-100'
-                  }`}
-                >
-                  {active ? '✓ ' : '+ '}
-                  {sec.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 3. Granular Item Exclusions */}
-        {currentRecord && (
-          <div className="border-t border-zinc-100 pt-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-zinc-700 block">
-                Exclude Specific Items (Optional)
+          {/* 1. Recipient & Expiry */}
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-[#14382f] block mb-1">
+                Recipient Name or Clinician Label
               </label>
-              <span className="text-[11px] text-zinc-400">
-                {excludedIds.length} item(s) selected to withhold
-              </span>
+              <input
+                type="text"
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+                placeholder="e.g. Dr. S. Rao (Endocrinology)"
+                className="w-full rounded-xl border border-[#d6ded5] bg-white p-2.5 text-xs text-[#1c2420] focus:border-[#2b8a7e] focus:outline-none"
+              />
             </div>
 
-            {hasExcludedMedicines && (
-              <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900">
-                ⚠️ <strong>Clinical Safety Notice:</strong> You have withheld one or more medications.
-                Hiding active prescriptions may affect clinician safety decisions.
-              </div>
-            )}
-
-            <div className="max-h-48 overflow-y-auto space-y-1.5 rounded-lg border border-zinc-200 p-2.5 bg-zinc-50/50">
-              {currentRecord.medications?.map((m) => {
-                const isExcluded = excludedIds.includes(m.id);
-                return (
-                  <label
-                    key={m.id}
-                    className="flex items-center justify-between gap-2 p-1.5 rounded bg-white border border-zinc-100 text-xs cursor-pointer hover:bg-zinc-50"
+            <div>
+              <label className="text-xs font-bold text-[#14382f] block mb-1.5">
+                Link Expiry Duration
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['1h', '24h', '7d'] as const).map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setExpiryOption(opt)}
+                    className={`rounded-xl py-2 text-xs font-bold border transition-all ${
+                      expiryOption === opt
+                        ? 'border-[#14382f] bg-[#14382f] text-[#ddf2e8] shadow-xs'
+                        : 'border-[#d6ded5] bg-white text-[#525d56] hover:bg-[#f1f4ee]'
+                    }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={isExcluded}
-                        onChange={() => toggleExcludedId(m.id)}
-                        className="rounded border-zinc-300 text-rose-600 focus:ring-rose-500"
-                      />
-                      <span className={isExcluded ? 'line-through text-zinc-400' : 'text-zinc-800'}>
-                        {m.name} ({m.dosage || 'dose unspecified'})
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-zinc-400 uppercase">Medication</span>
-                  </label>
+                    {opt === '1h' ? '1 Hour' : opt === '24h' ? '24 Hours' : '7 Days'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Section Inclusions */}
+          <div className="space-y-2 pt-2 border-t border-[#eef2ec]">
+            <label className="text-xs font-bold text-[#14382f] block">
+              Sections to Include
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: 'allergies', label: 'Allergies' },
+                { id: 'medications', label: 'Medications' },
+                { id: 'conditions', label: 'Conditions' },
+                { id: 'labs', label: 'Lab Results' },
+                { id: 'events', label: 'Care Events' },
+                { id: 'emergencyContact', label: 'Emergency Contact' },
+              ].map((sec) => {
+                const active = selectedSections.includes(sec.id as ShareSection);
+                return (
+                  <button
+                    key={sec.id}
+                    type="button"
+                    onClick={() => toggleSection(sec.id as ShareSection)}
+                    className={`rounded-xl px-3 py-1.5 text-xs font-bold border transition-all ${
+                      active
+                        ? 'bg-[#14382f] border-[#14382f] text-white shadow-2xs'
+                        : 'bg-white border-[#d6ded5] text-[#6e7771] hover:bg-[#f1f4ee]'
+                    }`}
+                  >
+                    {active ? '✓ ' : '+ '}
+                    {sec.label}
+                  </button>
                 );
               })}
             </div>
           </div>
-        )}
 
-        {/* Generate Button */}
-        <div className="pt-2">
+          {/* 3. Granular Item Exclusions */}
+          {currentRecord && (
+            <div className="border-t border-[#eef2ec] pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#14382f] block">
+                  Withhold Specific Items (Optional)
+                </label>
+                <span className="text-[11px] font-mono text-[#6e7771]">
+                  {excludedIds.length} withheld
+                </span>
+              </div>
+
+              {hasExcludedMedicines && (
+                <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50/90 p-3 text-xs text-amber-950">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700 mt-0.5" />
+                  <p className="leading-relaxed">
+                    <strong>Clinical Safety Notice:</strong> You have withheld one or more medications. The clinician brief will clearly disclose that items were withheld.
+                  </p>
+                </div>
+              )}
+
+              <div className="max-h-44 overflow-y-auto space-y-1.5 rounded-xl border border-[#d6ded5] p-2 bg-[#f8f9f5]">
+                {currentRecord.medications?.map((m) => {
+                  const isExcluded = excludedIds.includes(m.id);
+                  return (
+                    <label
+                      key={m.id}
+                      className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-[#e2e7e0] text-xs cursor-pointer hover:bg-[#f1f4ee] transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isExcluded}
+                          onChange={() => toggleExcludedId(m.id)}
+                          className="rounded border-[#d6ded5] text-rose-600 focus:ring-rose-500"
+                        />
+                        <span className={isExcluded ? 'line-through text-[#859088]' : 'font-medium text-[#1c2420]'}>
+                          {m.name} ({m.dosage || 'dose unspecified'})
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-[#6e7771] uppercase">Medicine</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Generate Button */}
           <button
             type="button"
             disabled={isEncrypting || !currentRecord}
             onClick={handleCreateShare}
-            className="w-full sm:w-auto rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#14382f] py-3.5 text-xs font-bold text-[#ddf2e8] shadow-sm hover:bg-[#1a473c] hover:shadow-md transition-all disabled:opacity-50"
           >
-            {isEncrypting ? 'Encrypting with AES-256-GCM...' : 'Generate Encrypted Link & QR Code'}
+            <Lock className="h-4 w-4 text-[#3eb4a4]" />
+            <span>
+              {isEncrypting ? 'Encrypting with AES-256-GCM...' : 'Encrypt & Generate Share Link'}
+            </span>
           </button>
-        </div>
+        </section>
 
-        {/* Generated Share Display */}
-        {createdShare && (
-          <div className="rounded-xl border-2 border-indigo-500 bg-indigo-50/30 p-5 space-y-4">
-            <div className="flex items-center gap-2 text-indigo-900">
-              <span className="text-lg">🔒</span>
-              <h3 className="font-bold text-sm">Encrypted Share Ready!</h3>
+        {/* Right Column: Live Clinician View Preview (Sticky) */}
+        <section className="glass-panel rounded-2xl p-5 shadow-xs space-y-4 lg:col-span-5 lg:sticky lg:top-20">
+          <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 text-[#2b8a7e]" />
+              <span className="text-xs font-bold text-[#14382f] uppercase tracking-wider">
+                Live Brief Preview
+              </span>
+            </div>
+            <span className="text-[10px] rounded bg-[#ddf2e8] px-2 py-0.5 font-bold text-[#14382f]">
+              Recipient: {recipient.split(' ')[0] || 'Clinician'}
+            </span>
+          </div>
+
+          {/* Mockup Frame */}
+          <div className="rounded-xl border border-[#d6ded5] bg-white p-4 space-y-3.5 text-xs shadow-2xs">
+            {/* Header info */}
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6e7771]">Patient</span>
+              <p className="font-extrabold text-sm text-[#14382f]">{currentRecord?.profile.name || 'Patient Name'}</p>
+              <p className="text-[11px] text-[#6e7771]">
+                DOB: {currentRecord?.profile.dateOfBirth} · {currentRecord?.profile.sex}
+                {selectedSections.includes('emergencyContact') && currentRecord?.profile.emergencyContact && (
+                  <span> · Contact: {currentRecord.profile.emergencyContact.phone}</span>
+                )}
+              </p>
             </div>
 
-            <p className="text-xs text-zinc-600 leading-relaxed">
-              The decryption key exists solely in the URL fragment below (after the <code>#k=</code>).
-              Our server cannot read this summary.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
-              {/* QR Code */}
-              <div className="rounded-xl bg-white p-3 border border-zinc-200 shadow-xs shrink-0">
-                <QRCodeSVG value={createdShare.url} size={150} level="M" />
+            {/* Withheld notice */}
+            {excludedIds.length > 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900 font-medium">
+                ⚠️ {excludedIds.length} item(s) withheld by patient from this summary.
               </div>
+            )}
 
-              {/* Link Box */}
-              <div className="space-y-2 w-full">
-                <label className="text-[11px] font-semibold text-zinc-500 block">Clinician URL</label>
+            {/* Sections summary */}
+            <div className="space-y-2 border-t border-[#f1f4ee] pt-2">
+              {selectedSections.includes('allergies') && (
+                <div className="flex items-start justify-between text-[11px]">
+                  <span className="font-bold text-[#14382f]">Allergies:</span>
+                  <span className="text-right text-[#525d56]">
+                    {currentRecord?.allergies?.length || 0} documented
+                  </span>
+                </div>
+              )}
+
+              {selectedSections.includes('medications') && (
+                <div className="flex items-start justify-between text-[11px]">
+                  <span className="font-bold text-[#14382f]">Medications:</span>
+                  <span className="text-right text-[#525d56]">
+                    {(currentRecord?.medications?.filter((m) => m.status === 'active' && !excludedIds.includes(m.id)) || []).length} active shared
+                  </span>
+                </div>
+              )}
+
+              {selectedSections.includes('labs') && (
+                <div className="flex items-start justify-between text-[11px]">
+                  <span className="font-bold text-[#14382f]">Lab Trends:</span>
+                  <span className="text-right text-[#525d56]">
+                    HbA1c &amp; TSH included
+                  </span>
+                </div>
+              )}
+
+              {selectedSections.includes('events') && (
+                <div className="flex items-start justify-between text-[11px]">
+                  <span className="font-bold text-[#14382f]">Timeline:</span>
+                  <span className="text-right text-[#525d56]">
+                    {currentRecord?.events?.length || 0} events
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-lg bg-[#f8f9f5] p-2 text-[10px] text-[#6e7771] text-center border border-[#e2e7e0]">
+              Ciphertext is scoped prior to encryption. Withheld items cannot leak.
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Success Notification Card & QR Code Display */}
+      {createdShare && (
+        <section className="glass-panel-forest rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ddf2e8] text-[#14382f]">
+              <Sparkles className="h-5 w-5 text-[#2b8a7e]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Share Brief Ready &amp; Encrypted</h2>
+              <p className="text-xs text-[#ddf2e8]/80">
+                AES-256-GCM encryption applied. The decryption key exists solely in the URL fragment (#k=).
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-12 items-center">
+            {/* QR Code Presentation */}
+            <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-5 shadow-xs sm:col-span-5">
+              <QRCodeSVG
+                value={createdShare.url}
+                size={180}
+                level="M"
+                includeMargin
+              />
+              <p className="text-[11px] text-[#525d56] font-bold mt-2 text-center">
+                Scan with clinician phone camera
+              </p>
+            </div>
+
+            {/* Link details & Actions */}
+            <div className="space-y-4 sm:col-span-7 text-xs">
+              <div>
+                <label className="text-xs font-bold text-[#ddf2e8] block mb-1">
+                  Encrypted Share URL
+                </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     readOnly
                     value={createdShare.url}
-                    className="w-full rounded-lg border border-zinc-300 bg-white p-2 font-mono text-[11px] text-zinc-800 select-all"
+                    className="w-full rounded-xl border border-[#2b8a7e]/50 bg-white/10 px-3 py-2 text-xs font-mono text-white focus:outline-none"
                   />
                   <button
                     type="button"
@@ -451,111 +573,110 @@ export default function SharePage() {
                       setCopySuccess(true);
                       setTimeout(() => setCopySuccess(false), 2000);
                     }}
-                    className="rounded-lg bg-zinc-900 px-3 py-2 text-xs font-medium text-white hover:bg-zinc-800 shrink-0 transition-colors"
+                    className="inline-flex items-center gap-1 rounded-xl bg-[#ddf2e8] px-3.5 py-2 text-xs font-bold text-[#14382f] hover:bg-white transition-colors shrink-0 shadow-2xs"
                   >
-                    {copySuccess ? 'Copied!' : 'Copy Link'}
+                    {copySuccess ? <Check className="h-3.5 w-3.5 text-emerald-700" /> : <Copy className="h-3.5 w-3.5" />}
+                    <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
                   </button>
                 </div>
+              </div>
 
-                <div className="text-[11px] text-zinc-500 space-y-0.5">
-                  <p>Expires: {new Date(createdShare.expiresAt).toLocaleString()}</p>
-                  {createdShare.withheldCount > 0 && (
-                    <p className="text-amber-700 font-medium">
-                      Notice: {createdShare.withheldCount} item(s) withheld from this brief.
-                    </p>
-                  )}
-                </div>
-
-                <div className="pt-1">
-                  <a
-                    href={createdShare.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex text-xs font-semibold text-indigo-600 hover:underline"
-                  >
-                    Test Clinician View in New Tab →
-                  </a>
-                </div>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <a
+                  href={createdShare.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#3eb4a4] px-4 py-2.5 text-xs font-bold text-[#0d2821] hover:bg-[#32998b] transition-colors shadow-2xs"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>Open Brief as Clinician</span>
+                </a>
               </div>
             </div>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
-      {/* Active & Revocable Shares List */}
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-4">
-        <h2 className="text-base font-bold text-zinc-900">Manage Active Shares ({shares.length})</h2>
+      {/* Active Shares Management Table */}
+      <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
+          <h2 className="text-base font-bold text-[#14382f] flex items-center gap-2">
+            <Clock className="h-4 w-4 text-[#2b8a7e]" />
+            <span>Active &amp; Past Share Links ({shares.length})</span>
+          </h2>
+          <span className="text-xs text-[#6e7771]">Track opens &amp; revoke access</span>
+        </div>
 
         {shares.length === 0 ? (
-          <p className="text-xs text-zinc-500 italic py-2">
-            No shares created yet. Generate a link above to share with your clinician.
-          </p>
+          <p className="text-xs text-[#6e7771] italic py-4">No shares created yet.</p>
         ) : (
           <div className="space-y-3">
-            {shares.map((share) => {
-              const isRevoked = Boolean(share.revokedAt);
-              const logs = accessLogs[share.id] || [];
+            {shares.map((s) => {
+              const isRevoked = Boolean(s.revokedAt);
+              const isExpired = new Date(s.expiresAt) < new Date();
+              const logs = accessLogs[s.id] || [];
 
               return (
                 <div
-                  key={share.id}
-                  className={`rounded-lg border p-4 text-xs space-y-3 transition-colors ${
-                    isRevoked
-                      ? 'border-rose-200 bg-rose-50/40 opacity-75'
-                      : 'border-zinc-200 bg-white'
-                  }`}
+                  key={s.id}
+                  className="rounded-xl border border-[#e2e7e0] bg-[#f8f9f5] p-4 shadow-2xs space-y-3 transition-colors hover:border-[#b8c9bf]"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-zinc-900">{share.recipientLabel}</span>
-                        <span
-                          className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
-                            isRevoked
-                              ? 'bg-rose-100 text-rose-800'
-                              : 'bg-emerald-100 text-emerald-800'
-                          }`}
-                        >
-                          {isRevoked ? 'Revoked' : 'Active'}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-zinc-500">
-                        Created {new Date(share.createdAt).toLocaleDateString()} · Expires{' '}
-                        {new Date(share.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        {share.withheldCount > 0 ? ` · ${share.withheldCount} withheld` : ''}
+                    <div>
+                      <span className="font-bold text-sm text-[#14382f] block">{s.recipientLabel}</span>
+                      <p className="text-[11px] text-[#6e7771] mt-0.5">
+                        Created: {new Date(s.createdAt).toLocaleDateString()} · Expiry:{' '}
+                        {new Date(s.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {s.withheldCount > 0 && ` · ${s.withheldCount} item(s) withheld`}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleFetchAccessLog(share)}
-                        disabled={loadingLogId === share.id}
-                        className="rounded border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
-                      >
-                        {loadingLogId === share.id ? 'Loading...' : 'View Access Log'}
-                      </button>
+                      {isRevoked ? (
+                        <span className="rounded-md bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-800">
+                          Revoked
+                        </span>
+                      ) : isExpired ? (
+                        <span className="rounded-md bg-zinc-200 px-2 py-0.5 text-xs font-bold text-zinc-700">
+                          Expired
+                        </span>
+                      ) : (
+                        <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
+                          Active
+                        </span>
+                      )}
 
                       {!isRevoked && (
                         <button
                           type="button"
-                          onClick={() => handleRevoke(share)}
-                          className="rounded border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
+                          onClick={() => handleRevoke(s)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors"
                         >
-                          Revoke Access
+                          <Trash2 className="h-3 w-3" />
+                          <span>Revoke</span>
                         </button>
                       )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleFetchAccessLog(s)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-[#d6ded5] bg-white px-2.5 py-1 text-xs font-semibold text-[#525d56] hover:bg-[#f1f4ee] transition-colors"
+                      >
+                        <Eye className="h-3 w-3" />
+                        <span>{loadingLogId === s.id ? 'Checking...' : 'Audit Log'}</span>
+                      </button>
                     </div>
                   </div>
 
-                  {/* Access Log Details */}
+                  {/* Access log details */}
                   {logs.length > 0 && (
-                    <div className="rounded border border-zinc-100 bg-zinc-50 p-2.5 text-[11px] space-y-1">
-                      <span className="font-semibold text-zinc-600 block">Access Log:</span>
-                      {logs.map((ev, i) => (
-                        <p key={i} className="text-zinc-500">
-                          • Opened at <strong>{new Date(ev.at).toLocaleTimeString()}</strong> ({ev.ua})
-                        </p>
+                    <div className="rounded-lg bg-white p-3 border border-[#e2e7e0] text-xs space-y-1">
+                      <span className="font-bold text-[#14382f] block text-[11px]">Access History:</span>
+                      {logs.map((e, idx) => (
+                        <div key={idx} className="flex justify-between text-[#525d56] text-[11px]">
+                          <span>{new Date(e.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                          <span className="font-mono text-[#859088] truncate max-w-xs">{e.ua}</span>
+                        </div>
                       ))}
                     </div>
                   )}

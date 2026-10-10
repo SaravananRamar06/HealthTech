@@ -3,6 +3,7 @@
 
 import type { CareEvent } from '@/lib/types';
 import { SourceBadge } from './SourceBadge';
+import { Calendar, Building, XCircle } from 'lucide-react';
 
 interface TimelineProps {
   events: CareEvent[];
@@ -12,24 +13,24 @@ interface TimelineProps {
 
 export function Timeline({ events, onRemove, readOnly = false }: TimelineProps) {
   if (!events || events.length === 0) {
-    return <p className="text-sm text-zinc-500 italic">No care events recorded.</p>;
+    return <p className="text-sm text-[#6e7771] italic py-2">No care events recorded.</p>;
   }
 
   // Sort reverse chronological
   const sorted = [...events].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   return (
-    <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-zinc-200">
+    <div className="relative pl-7 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#d6ded5]">
       {sorted.map((e) => (
         <div key={e.id} className="relative group">
           {/* Circle indicator */}
-          <div className="absolute -left-6 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-indigo-500 shadow-xs" />
+          <div className="absolute -left-7 top-2 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#2b8a7e] shadow-2xs group-hover:scale-110 transition-transform" />
 
-          <div className="rounded-lg border border-zinc-200 bg-white p-3 shadow-xs">
+          <div className="rounded-xl border border-[#e2e7e0] bg-white p-4 shadow-2xs transition-all hover:border-[#b8c9bf] hover:shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-zinc-900">{e.title}</span>
-                <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-indigo-700">
+                <span className="font-bold text-sm text-[#14382f]">{e.title}</span>
+                <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#14382f]">
                   {e.type}
                 </span>
               </div>
@@ -38,19 +39,30 @@ export function Timeline({ events, onRemove, readOnly = false }: TimelineProps) 
                 <button
                   type="button"
                   onClick={() => onRemove(e.id)}
-                  className="text-zinc-400 hover:text-zinc-700 text-xs"
+                  className="inline-flex items-center gap-1 text-[11px] text-[#859088] hover:text-rose-700 transition-colors"
                 >
-                  Remove
+                  <XCircle className="h-3.5 w-3.5" />
+                  <span>Remove</span>
                 </button>
               )}
             </div>
 
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
-              {e.date && <span>Date: {e.date}</span>}
-              {e.facility && <span>Facility: {e.facility}</span>}
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#525d56]">
+              {e.date && (
+                <span className="inline-flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-[#6e7771]" />
+                  <span>{e.date}</span>
+                </span>
+              )}
+              {e.facility && (
+                <span className="inline-flex items-center gap-1">
+                  <Building className="h-3.5 w-3.5 text-[#6e7771]" />
+                  <span>{e.facility}</span>
+                </span>
+              )}
             </div>
 
-            <div className="mt-2">
+            <div className="mt-2.5 pt-2 border-t border-[#f1f4ee]">
               <SourceBadge provenance={e.provenance} />
             </div>
           </div>

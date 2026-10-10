@@ -8,6 +8,16 @@ import Link from 'next/link';
 import { useVault } from '@/lib/vault';
 import { useIsMounted } from '@/lib/useIsMounted';
 import type { ExtractedItem, ExtractionResult, SourceDocument } from '@/lib/types';
+import {
+  UploadCloud,
+  Sparkles,
+  CheckCircle2,
+  ArrowLeft,
+  Check,
+  Edit3,
+  X,
+  Loader2,
+} from 'lucide-react';
 
 export default function ImportPage() {
   const mounted = useIsMounted();
@@ -30,8 +40,11 @@ export default function ImportPage() {
 
   if (!mounted) {
     return (
-      <main className="mx-auto flex min-h-[50vh] max-w-3xl items-center justify-center p-6">
-        <p className="text-sm text-zinc-500">Loading import studio...</p>
+      <main className="mx-auto flex min-h-[60vh] max-w-4xl items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#14382f]" />
+          <p className="text-sm font-medium text-[#525d56]">Loading import studio...</p>
+        </div>
       </main>
     );
   }
@@ -44,7 +57,6 @@ export default function ImportPage() {
       return;
     }
 
-    // Ensure we have a record to attach to (load start if none)
     if (!record) {
       loadDemo('start');
     }
@@ -176,47 +188,57 @@ export default function ImportPage() {
   const pendingItems = record?.pendingReview || [];
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Link href="/vault" className="text-xs text-zinc-500 hover:text-zinc-800">
-              ← Return to Vault
+            <Link
+              href="/vault"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#525d56] hover:text-[#14382f] transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Return to Vault</span>
             </Link>
-            <span className="text-zinc-300">/</span>
-            <span className="rounded bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700">
-              IMPORT & REVIEW
+            <span className="text-[#ccebe0]">/</span>
+            <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
+              IMPORT &amp; REVIEW
             </span>
           </div>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900">
-            Document Ingestion & Staging Queue
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14382f]">
+            Document Ingestion &amp; Staging Queue
           </h1>
-          <p className="text-xs text-zinc-500">
-            Every AI-extracted fact must be reviewed and confirmed by the patient before it enters the record.
+          <p className="text-xs text-[#525d56] mt-0.5">
+            Every AI-extracted fact must be reviewed and confirmed by the patient before it enters the vault or can be shared.
           </p>
         </div>
 
         <Link
           href="/vault"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-zinc-800 transition-colors"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#14382f] px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#1a473c] transition-colors"
         >
-          View Vault ({record?.medications?.length || 0} meds, {record?.allergies?.length || 0} allergies)
+          <span>View Vault</span>
+          <span className="rounded-md bg-[#2b8a7e] px-1.5 py-0.5 text-[10px] text-white">
+            {record?.medications?.length || 0} meds
+          </span>
         </Link>
       </div>
 
       {/* Upload & Consent Section */}
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-4">
-        <h2 className="text-sm font-semibold text-zinc-900">1. Document Ingestion</h2>
+      <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-5">
+        <h2 className="text-base font-bold text-[#14382f] flex items-center gap-2">
+          <UploadCloud className="h-5 w-5 text-[#2b8a7e]" />
+          <span>1. Ingest Clinical Documents</span>
+        </h2>
 
         {/* Consent Checkbox */}
-        <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-950">
-          <label className="flex items-start gap-2.5 cursor-pointer">
+        <div className="rounded-xl border border-amber-200/90 bg-amber-50/80 p-4 text-xs text-amber-950 shadow-2xs">
+          <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={consentGiven}
               onChange={(e) => setConsentGiven(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+              className="mt-0.5 h-4 w-4 rounded border-amber-300 text-[#14382f] focus:ring-[#2b8a7e]"
             />
             <span className="leading-relaxed">
               <strong>Consent for AI Extraction:</strong> I understand that synthetic documents are analyzed using Google Gemini AI to extract structured clinical facts. <strong>Do not submit real, personal, or identifiable medical records.</strong>
@@ -225,9 +247,9 @@ export default function ImportPage() {
         </div>
 
         {/* Upload Buttons */}
-        <div className="grid gap-3 sm:grid-cols-2 pt-1">
+        <div className="grid gap-4 sm:grid-cols-2 pt-1">
           {/* File Upload Dropzone */}
-          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 p-6 text-center hover:border-zinc-400 bg-zinc-50/50">
+          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#d6ded5] bg-[#f8f9f5] p-6 text-center hover:border-[#2b8a7e] hover:bg-white transition-all">
             <input
               ref={fileInputRef}
               type="file"
@@ -237,51 +259,67 @@ export default function ImportPage() {
               className="hidden"
               disabled={importing}
             />
-            <p className="text-xs font-semibold text-zinc-700">Upload Prescriptions or Reports</p>
-            <p className="text-[11px] text-zinc-500 mt-1 mb-3">JPEG, PNG, WebP or PDF (≤4.5 MB)</p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ddf2e8] text-[#14382f] mb-2 shadow-2xs">
+              <UploadCloud className="h-5 w-5 text-[#2b8a7e]" />
+            </div>
+            <p className="text-xs font-bold text-[#14382f]">Upload Prescriptions or Reports</p>
+            <p className="text-[11px] text-[#6e7771] mt-0.5 mb-3">JPEG, PNG, WebP or PDF (≤4.5 MB)</p>
             <button
               type="button"
               disabled={importing}
               onClick={() => fileInputRef.current?.click()}
-              className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+              className="rounded-xl bg-[#14382f] px-4 py-2 text-xs font-bold text-white hover:bg-[#1a473c] disabled:opacity-50 transition-colors shadow-2xs"
             >
               Select Files
             </button>
           </div>
 
           {/* Sample Demo Ingestion */}
-          <div className="flex flex-col items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50/40 p-6 text-center">
-            <p className="text-xs font-semibold text-indigo-950">Use Bundled Demo Documents</p>
-            <p className="text-[11px] text-indigo-800/80 mt-1 mb-3">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-[#b8decb] bg-[#f0f9f5] p-6 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ddf2e8] text-[#14382f] mb-2 shadow-2xs">
+              <Sparkles className="h-5 w-5 text-[#2b8a7e]" />
+            </div>
+            <p className="text-xs font-bold text-[#14382f]">Use Bundled Demo Documents</p>
+            <p className="text-[11px] text-[#525d56] mt-0.5 mb-3">
               Load Meena&apos;s 5 synthetic documents (Discharge, 2 Prescriptions, 2 Labs)
             </p>
             <button
               type="button"
               disabled={importing}
               onClick={handleImportSampleDocuments}
-              className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#2b8a7e] px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-[#236f65] disabled:opacity-50 transition-colors"
             >
-              {importing ? 'Extracting...' : 'Load 5 Sample Documents'}
+              {importing ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Extracting...</span>
+                </>
+              ) : (
+                <span>Load 5 Sample Documents</span>
+              )}
             </button>
           </div>
         </div>
 
         {statusMessage && (
-          <p className="text-xs text-indigo-700 font-medium animate-pulse">{statusMessage}</p>
+          <div className="flex items-center gap-2 rounded-xl bg-[#ddf2e8]/70 border border-[#b8decb] p-3 text-xs text-[#14382f] font-semibold animate-fade-in">
+            <Sparkles className="h-4 w-4 text-[#2b8a7e] shrink-0" />
+            <span>{statusMessage}</span>
+          </div>
         )}
       </section>
 
       {/* Review Queue */}
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-3">
+      <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eef2ec] pb-4">
           <div>
-            <h2 className="text-base font-bold text-zinc-900 flex items-center gap-2">
+            <h2 className="text-base font-bold text-[#14382f] flex items-center gap-2">
               <span>2. Review Staging Queue</span>
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">
+              <span className="rounded-full bg-[#14382f] px-2.5 py-0.5 text-xs font-bold text-[#ddf2e8]">
                 {pendingItems.length}
               </span>
             </h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-[#6e7771] mt-0.5">
               Items in this queue are private and NEVER shared until confirmed.
             </p>
           </div>
@@ -290,47 +328,47 @@ export default function ImportPage() {
             <button
               type="button"
               onClick={() => {
-                // Accept all high confidence items
                 pendingItems.forEach((item) => {
                   acceptItem(item.tempId);
                 });
               }}
-              className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#b8decb] bg-[#ddf2e8] px-3.5 py-2 text-xs font-bold text-[#14382f] hover:bg-[#ccebe0] transition-colors shadow-2xs"
             >
-              Confirm All ({pendingItems.length})
+              <CheckCircle2 className="h-3.5 w-3.5 text-[#2b8a7e]" />
+              <span>Confirm All ({pendingItems.length})</span>
             </button>
           )}
         </div>
 
         {pendingItems.length === 0 ? (
-          <div className="py-8 text-center text-zinc-500 text-xs">
-            <p className="font-semibold text-zinc-700">No items waiting in the review queue.</p>
-            <p className="mt-1">
+          <div className="py-10 text-center text-[#6e7771] text-xs space-y-1">
+            <p className="font-bold text-sm text-[#14382f]">No items waiting in the review queue.</p>
+            <p>
               Upload documents or click &quot;Load 5 Sample Documents&quot; above to stage extracted items.
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {pendingItems.map((item) => {
               const isEditing = editingId === item.tempId;
 
               return (
                 <div
                   key={item.tempId}
-                  className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 shadow-2xs space-y-3 transition-colors hover:border-zinc-300"
+                  className="rounded-xl border border-[#e2e7e0] bg-[#f8f9f5] p-4 shadow-2xs space-y-3 transition-all hover:border-[#b8c9bf] hover:shadow-xs"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="rounded bg-zinc-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-800">
+                      <span className="rounded-md bg-[#e5eae3] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#14382f]">
                         {item.type}
                       </span>
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                        className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
                           item.confidence === 'high'
-                            ? 'bg-emerald-100 text-emerald-800'
+                            ? 'bg-[#ddf2e8] text-[#14382f] border border-[#b8decb]'
                             : item.confidence === 'medium'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-rose-100 text-rose-800'
+                            ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                            : 'bg-rose-100 text-rose-900 border border-rose-200'
                         }`}
                       >
                         {item.confidence} confidence
@@ -341,113 +379,116 @@ export default function ImportPage() {
                       <button
                         type="button"
                         onClick={() => handleAccept(item)}
-                        className="rounded bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#14382f] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#1a473c] transition-colors shadow-2xs"
                       >
-                        {isEditing ? 'Save & Accept' : 'Accept'}
+                        <Check className="h-3.5 w-3.5 text-[#3eb4a4]" />
+                        <span>{isEditing ? 'Save & Accept' : 'Accept'}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => (isEditing ? setEditingId(null) : startEdit(item))}
-                        className="rounded border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-100 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg border border-[#d6ded5] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#525d56] hover:bg-[#f1f4ee] transition-colors"
                       >
-                        {isEditing ? 'Cancel' : 'Edit'}
+                        <Edit3 className="h-3 w-3" />
+                        <span>{isEditing ? 'Cancel' : 'Edit'}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => rejectItem(item.tempId)}
-                        className="rounded border border-rose-200 bg-white px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors"
                       >
-                        Reject
+                        <X className="h-3 w-3" />
+                        <span>Reject</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Verbatim Excerpt */}
-                  <div className="rounded border-l-2 border-indigo-400 bg-white p-2.5 text-xs text-zinc-700">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                  <div className="rounded-xl border-l-4 border-l-[#2b8a7e] border border-[#e2e7e0] bg-white p-3 text-xs text-[#1c2420]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#6e7771] block mb-0.5">
                       Verbatim Document Excerpt:
                     </span>
-                    <blockquote className="italic font-mono text-[11px] text-zinc-800">
+                    <blockquote className="italic font-mono text-[11px] text-[#2c3832]">
                       &ldquo;{item.excerpt}&rdquo;
                     </blockquote>
                   </div>
 
                   {/* Data Content / Inline Edit Form */}
-                  <div className="rounded bg-white p-3 text-xs border border-zinc-100">
+                  <div className="rounded-xl bg-white p-3.5 text-xs border border-[#e2e7e0]">
                     {isEditing ? (
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         {item.type === 'medication' && (
-                          <div className="grid gap-2 sm:grid-cols-2">
+                          <div className="grid gap-2.5 sm:grid-cols-2">
                             <div>
-                              <label className="text-[10px] text-zinc-500 font-semibold block">Medicine Name</label>
+                              <label className="text-[10px] text-[#14382f] font-bold block mb-1">Medicine Name</label>
                               <input
                                 type="text"
                                 value={String(editFields.name || '')}
                                 onChange={(e) => setEditFields({ ...editFields, name: e.target.value })}
-                                className="w-full rounded border border-zinc-300 p-1 text-xs"
+                                className="w-full rounded-lg border border-[#d6ded5] p-1.5 text-xs focus:border-[#2b8a7e] focus:outline-none"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-zinc-500 font-semibold block">Dosage</label>
+                              <label className="text-[10px] text-[#14382f] font-bold block mb-1">Dosage</label>
                               <input
                                 type="text"
                                 value={String(editFields.dosage || '')}
                                 onChange={(e) => setEditFields({ ...editFields, dosage: e.target.value })}
-                                className="w-full rounded border border-zinc-300 p-1 text-xs"
+                                className="w-full rounded-lg border border-[#d6ded5] p-1.5 text-xs focus:border-[#2b8a7e] focus:outline-none"
                               />
                             </div>
                           </div>
                         )}
                         {item.type === 'allergy' && (
-                          <div className="grid gap-2 sm:grid-cols-2">
+                          <div className="grid gap-2.5 sm:grid-cols-2">
                             <div>
-                              <label className="text-[10px] text-zinc-500 font-semibold block">Substance</label>
+                              <label className="text-[10px] text-[#14382f] font-bold block mb-1">Substance</label>
                               <input
                                 type="text"
                                 value={String(editFields.substance || '')}
                                 onChange={(e) => setEditFields({ ...editFields, substance: e.target.value })}
-                                className="w-full rounded border border-zinc-300 p-1 text-xs"
+                                className="w-full rounded-lg border border-[#d6ded5] p-1.5 text-xs focus:border-[#2b8a7e] focus:outline-none"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-zinc-500 font-semibold block">Reaction</label>
+                              <label className="text-[10px] text-[#14382f] font-bold block mb-1">Reaction</label>
                               <input
                                 type="text"
                                 value={String(editFields.reaction || '')}
                                 onChange={(e) => setEditFields({ ...editFields, reaction: e.target.value })}
-                                className="w-full rounded border border-zinc-300 p-1 text-xs"
+                                className="w-full rounded-lg border border-[#d6ded5] p-1.5 text-xs focus:border-[#2b8a7e] focus:outline-none"
                               />
                             </div>
                           </div>
                         )}
                         {item.type === 'lab' && (
-                          <div className="grid gap-2 sm:grid-cols-3">
+                          <div className="grid gap-2.5 sm:grid-cols-3">
                             <div>
-                              <label className="text-[10px] text-zinc-500 font-semibold block">Test</label>
+                              <label className="text-[10px] text-[#14382f] font-bold block mb-1">Test</label>
                               <input
                                 type="text"
                                 value={String(editFields.test || '')}
                                 onChange={(e) => setEditFields({ ...editFields, test: e.target.value })}
-                                className="w-full rounded border border-zinc-300 p-1 text-xs"
+                                className="w-full rounded-lg border border-[#d6ded5] p-1.5 text-xs focus:border-[#2b8a7e] focus:outline-none"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-zinc-500 font-semibold block">Value</label>
+                              <label className="text-[10px] text-[#14382f] font-bold block mb-1">Value</label>
                               <input
                                 type="number"
                                 step="any"
                                 value={String(editFields.value ?? '')}
                                 onChange={(e) => setEditFields({ ...editFields, value: parseFloat(e.target.value) })}
-                                className="w-full rounded border border-zinc-300 p-1 text-xs"
+                                className="w-full rounded-lg border border-[#d6ded5] p-1.5 text-xs focus:border-[#2b8a7e] focus:outline-none"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-zinc-500 font-semibold block">Unit</label>
+                              <label className="text-[10px] text-[#14382f] font-bold block mb-1">Unit</label>
                               <input
                                 type="text"
                                 value={String(editFields.unit || '')}
                                 onChange={(e) => setEditFields({ ...editFields, unit: e.target.value })}
-                                className="w-full rounded border border-zinc-300 p-1 text-xs"
+                                className="w-full rounded-lg border border-[#d6ded5] p-1.5 text-xs focus:border-[#2b8a7e] focus:outline-none"
                               />
                             </div>
                           </div>
@@ -457,38 +498,38 @@ export default function ImportPage() {
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                         {item.type === 'medication' && (
                           <>
-                            <span className="font-semibold text-zinc-900">{item.data.name}</span>
+                            <span className="font-bold text-[#14382f]">{item.data.name}</span>
                             {item.data.ingredients?.length > 0 && (
-                              <span className="text-zinc-500">[{item.data.ingredients.join(', ')}]</span>
+                              <span className="text-[#6e7771]">[{item.data.ingredients.join(', ')}]</span>
                             )}
-                            {item.data.dosage && <span className="text-zinc-600">Dose: {item.data.dosage}</span>}
-                            {item.data.prescriber && <span className="text-zinc-400">By: {item.data.prescriber}</span>}
+                            {item.data.dosage && <span className="text-[#404a44]">Dose: <strong>{item.data.dosage}</strong></span>}
+                            {item.data.prescriber && <span className="text-[#6e7771]">By: {item.data.prescriber}</span>}
                           </>
                         )}
                         {item.type === 'allergy' && (
                           <>
-                            <span className="font-semibold text-rose-900">{item.data.substance}</span>
-                            {item.data.reaction && <span className="text-zinc-600">Reaction: {item.data.reaction}</span>}
+                            <span className="font-bold text-rose-950">{item.data.substance}</span>
+                            {item.data.reaction && <span className="text-rose-800">Reaction: {item.data.reaction}</span>}
                           </>
                         )}
                         {item.type === 'lab' && (
                           <>
-                            <span className="font-semibold text-zinc-900">{item.data.test}:</span>
-                            <span className="font-mono text-zinc-800">{item.data.value} {item.data.unit}</span>
-                            {item.data.refRange && <span className="text-zinc-400">(Ref: {item.data.refRange})</span>}
+                            <span className="font-bold text-[#14382f]">{item.data.test}:</span>
+                            <span className="font-mono font-bold text-[#14382f]">{item.data.value} {item.data.unit}</span>
+                            {item.data.refRange && <span className="text-[#6e7771]">(Ref: {item.data.refRange})</span>}
                           </>
                         )}
                         {item.type === 'condition' && (
                           <>
-                            <span className="font-semibold text-zinc-900">{item.data.name}</span>
-                            {item.data.since && <span className="text-zinc-500">Since: {item.data.since}</span>}
+                            <span className="font-bold text-[#14382f]">{item.data.name}</span>
+                            {item.data.since && <span className="text-[#6e7771]">Since: {item.data.since}</span>}
                           </>
                         )}
                         {item.type === 'event' && (
                           <>
-                            <span className="font-semibold text-zinc-900">{item.data.title}</span>
-                            <span className="text-zinc-500">({item.data.type})</span>
-                            {item.data.facility && <span className="text-zinc-400">At: {item.data.facility}</span>}
+                            <span className="font-bold text-[#14382f]">{item.data.title}</span>
+                            <span className="text-[#6e7771]">({item.data.type})</span>
+                            {item.data.facility && <span className="text-[#859088]">At: {item.data.facility}</span>}
                           </>
                         )}
                       </div>
