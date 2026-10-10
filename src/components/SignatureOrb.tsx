@@ -7,16 +7,20 @@ export function SignatureOrb() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId: number | null = null;
     let width = (canvas.width = 440);
     let height = (canvas.height = 440);
+    let isIntersecting = true;
+    let isTabVisible = typeof document !== 'undefined' ? !document.hidden : true;
 
     const updateSize = () => {
       if (!canvas) return;
@@ -27,7 +31,7 @@ export function SignatureOrb() {
     };
 
     updateSize();
-    window.addEventListener('resize', updateSize);
+    window.addEventListener('resize', updateSize, { passive: true });
 
     // Particle nodes circulating in 3D orbital space
     const particles = [
@@ -220,22 +224,68 @@ export function SignatureOrb() {
 
       ctx.restore();
 
-      // Only schedule next frame if not reduced motion or while actively tilting
-      if (!prefersReducedMotion) {
+      // Only schedule next frame if not reduced motion, element is visible in viewport, and tab is active
+      if (!prefersReducedMotion && isIntersecting && isTabVisible) {
         animationFrameId = requestAnimationFrame(render);
       }
     };
 
-    render();
+    const startAnimation = () => {
+      if (!animationFrameId && !prefersReducedMotion && isIntersecting && isTabVisible) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
 
-    // Pure coordinate updates without triggering React state re-renders
+    const stopAnimation = () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    };
+
+    // Initial frame render and mark ready
+    render();
+    setIsReady(true);
+
+    // 1. IntersectionObserver: pause rendering when scrolled out of view
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (entry) {
+            isIntersecting = entry.isIntersecting;
+            if (isIntersecting) {
+              startAnimation();
+            } else {
+              stopAnimation();
+            }
+          }
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(container);
+    }
+
+    // 2. Page Visibility API: pause rendering when browser tab is inactive
+    const handleVisibilityChange = () => {
+      isTabVisible = !document.hidden;
+      if (isTabVisible && isIntersecting) {
+        startAnimation();
+      } else {
+        stopAnimation();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 3. Mouse interactions
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
       targetTiltX = Math.max(-1, Math.min(1, x));
       targetTiltY = Math.max(-1, Math.min(1, y));
-      if (prefersReducedMotion) {
+      if (prefersReducedMotion || !animationFrameId) {
         render();
       }
     };
@@ -243,7 +293,7 @@ export function SignatureOrb() {
     const handleMouseLeave = () => {
       targetTiltX = 0;
       targetTiltY = 0;
-      if (prefersReducedMotion) {
+      if (prefersReducedMotion || !animationFrameId) {
         render();
       }
     };
@@ -252,9 +302,11 @@ export function SignatureOrb() {
     canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
 
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+      stopAnimation();
+      if (observer) {
+        observer.disconnect();
       }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', updateSize);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
@@ -268,10 +320,19 @@ export function SignatureOrb() {
       onMouseLeave={() => setIsHovered(false)}
       className="relative flex items-center justify-center select-none w-full max-w-[420px] mx-auto py-2"
     >
+      {/* Zero-CLS Fallback / Static Glass Core */}
+      <div
+        className={`absolute w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] rounded-full bg-gradient-to-tr from-[#0d2821] via-[#14382f] to-[#39A99A] shadow-2xl transition-opacity duration-500 pointer-events-none ${
+          isReady ? 'opacity-0' : 'opacity-80'
+        }`}
+      />
+
       {/* 3D Canvas Sphere */}
       <canvas
         ref={canvasRef}
-        className="w-[280px] h-[280px] sm:w-[380px] sm:h-[380px] max-w-full cursor-grab active:cursor-grabbing transition-transform duration-500 ease-out"
+        className={`w-[280px] h-[280px] sm:w-[380px] sm:h-[380px] max-w-full cursor-grab active:cursor-grabbing transition-transform duration-500 ease-out ${
+          isReady ? 'opacity-100' : 'opacity-0'
+        }`}
         style={{
           transform: isHovered ? 'scale(1.02)' : 'scale(1)',
         }}

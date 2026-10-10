@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { ArrowRight, FileText, CheckCircle2, Lock, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { SignatureOrb } from '@/components/SignatureOrb';

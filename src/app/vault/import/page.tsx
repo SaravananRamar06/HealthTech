@@ -62,13 +62,11 @@ export default function ImportPage() {
     }
 
     setImporting(true);
-    setStatusMessage(`Processing ${files.length} document(s)...`);
+    setStatusMessage(`Processing ${files.length} document(s) concurrently...`);
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        setStatusMessage(`Extracting facts from "${file.name}"...`);
-
+      const fileList = Array.from(files);
+      const promises = fileList.map(async (file, i) => {
         const formData = new FormData();
         formData.append('file', file);
         const docId = `doc_${Date.now()}_${i}`;
@@ -80,13 +78,11 @@ export default function ImportPage() {
         });
 
         if (!res.ok) {
-          console.error(`Failed to extract ${file.name}`);
-          continue;
+          throw new Error(`Failed to extract ${file.name}`);
         }
 
         const result: ExtractionResult = await res.json();
 
-        // 1. Add document to record
         const sourceDoc: SourceDocument = {
           id: docId,
           title: result.document.title || file.name,
@@ -97,12 +93,30 @@ export default function ImportPage() {
           fileRef: `idb:${docId}`,
         };
 
-        await addDocument(sourceDoc, file);
+        return { sourceDoc, items: result.items, file };
+      });
 
-        // 2. Queue extracted facts for review
-        queueForReview(result.items);
+      const settled = await Promise.allSettled(promises);
+      const successfulDocs: { doc: SourceDocument; file: File }[] = [];
+      const successfulItems: ExtractedItem[] = [];
+
+      for (const res of settled) {
+        if (res.status === 'fulfilled') {
+          successfulDocs.push({ doc: res.value.sourceDoc, file: res.value.file });
+          successfulItems.push(...res.value.items);
+        } else {
+          console.error('File extraction failure:', res.reason);
+        }
       }
-      setStatusMessage('Extraction complete! Please review each item below.');
+
+      for (const { doc, file } of successfulDocs) {
+        await addDocument(doc, file);
+      }
+      if (successfulItems.length > 0) {
+        queueForReview(successfulItems);
+      }
+
+      setStatusMessage(`Extraction complete (${successfulDocs.length} documents)! Please review each item below.`);
     } catch (err) {
       console.error('Import error:', err);
       setStatusMessage('Error during extraction. Please try again.');
@@ -123,7 +137,7 @@ export default function ImportPage() {
     }
 
     setImporting(true);
-    setStatusMessage('Importing 5 sample demo documents...');
+    setStatusMessage('Importing 5 sample demo documents in parallel...');
 
     const sampleDocs = [
       { id: 'doc_01', name: 'Discharge Summary (Jan 2025)' },
@@ -134,8 +148,7 @@ export default function ImportPage() {
     ];
 
     try {
-      for (const sample of sampleDocs) {
-        setStatusMessage(`Processing ${sample.name}...`);
+      const promises = sampleDocs.map(async (sample) => {
         const formData = new FormData();
         formData.append('demoDocId', sample.id);
         formData.append('documentId', sample.id);
@@ -145,7 +158,9 @@ export default function ImportPage() {
           body: formData,
         });
 
-        if (!res.ok) continue;
+        if (!res.ok) {
+          throw new Error(`Failed to extract ${sample.name}`);
+        }
 
         const result: ExtractionResult = await res.json();
 
@@ -159,10 +174,30 @@ export default function ImportPage() {
           fileRef: `/demo/${sample.id}`,
         };
 
-        await addDocument(sourceDoc);
-        queueForReview(result.items);
+        return { sourceDoc, items: result.items };
+      });
+
+      const settled = await Promise.allSettled(promises);
+      const successfulDocs: SourceDocument[] = [];
+      const successfulItems: ExtractedItem[] = [];
+
+      for (const res of settled) {
+        if (res.status === 'fulfilled') {
+          successfulDocs.push(res.value.sourceDoc);
+          successfulItems.push(...res.value.items);
+        } else {
+          console.error('Sample extraction failure:', res.reason);
+        }
       }
-      setStatusMessage('All 5 sample documents extracted! Review items below.');
+
+      for (const doc of successfulDocs) {
+        await addDocument(doc);
+      }
+      if (successfulItems.length > 0) {
+        queueForReview(successfulItems);
+      }
+
+      setStatusMessage(`All ${successfulDocs.length} sample documents extracted! Review items below.`);
     } catch (err) {
       console.error('Sample import error:', err);
       setStatusMessage('Error loading samples.');
