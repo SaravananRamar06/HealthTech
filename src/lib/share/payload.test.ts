@@ -6,6 +6,15 @@ import demoComplete from '../demo/demoComplete.json';
 describe('buildSharePayload', () => {
   const record = demoComplete as unknown as PatientRecord;
   const now = new Date('2026-10-10T12:00:00Z');
+  it('does not disclose allergy status when the allergy itself is withheld', () => {
+    const payload = buildSharePayload(record, {
+      sections: ['allergies', 'medications'], excludedIds: record.allergies.map((a) => a.id),
+      recipientLabel: 'Synthetic clinician', expiresAt: '2026-10-11T12:00:00Z',
+    }, now);
+    expect(payload.allergies).toEqual([]);
+    expect(payload.allergyStatus).toBe('unknown');
+    expect(payload.flags.some((flag) => flag.type === 'allergy-med-match')).toBe(false);
+  });
 
   it('calculates correct age and includes all sections when selected', () => {
     const selection: ShareSelection = {

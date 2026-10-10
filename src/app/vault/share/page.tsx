@@ -114,6 +114,8 @@ export default function SharePage() {
   }
 
   const currentRecord = record;
+  // Synthetic preview date only; share creation uses the actual time in its event handler.
+  const previewDate = new Date('2026-10-10T00:00:00Z');
 
   function toggleSection(sec: ShareSection) {
     if (selectedSections.includes(sec)) {
@@ -264,9 +266,18 @@ export default function SharePage() {
     }
   }
 
-  const hasExcludedMedicines = currentRecord?.medications?.some((m) =>
-    excludedIds.includes(m.id)
-  );
+  const hasExcludedMedicines = currentRecord?.medications?.some((m) => !selectedSections.includes('medications') || excludedIds.includes(m.id));
+  const preview = currentRecord ? buildSharePayload(currentRecord, {
+    sections: selectedSections, excludedIds, recipientLabel: recipient,
+    expiresAt: new Date(previewDate.getTime() + 3_600_000).toISOString(),
+  }, previewDate) : null;
+  const withholdingItems = currentRecord ? [
+    ...currentRecord.medications.map((m) => ({ id: m.id, label: `${m.name} (${m.dosage || 'dose unspecified'})`, type: 'Medicine' })),
+    ...currentRecord.allergies.map((a) => ({ id: a.id, label: a.substance, type: 'Allergy' })),
+    ...currentRecord.conditions.map((c) => ({ id: c.id, label: c.name, type: 'Condition' })),
+    ...currentRecord.labs.map((l) => ({ id: l.id, label: `${l.test}: ${l.value} ${l.unit} (${l.date})`, type: 'Lab' })),
+    ...currentRecord.events.map((e) => ({ id: e.id, label: e.title, type: 'Event' })),
+  ] : [];
 
   return (
     <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6">
@@ -427,7 +438,7 @@ export default function SharePage() {
               )}
 
               <div className="max-h-44 overflow-y-auto space-y-1.5 rounded-xl border border-[#d6ded5] p-2 bg-[#f8f9f5]">
-                {currentRecord.medications?.map((m) => {
+                {withholdingItems.map((m) => {
                   const isExcluded = excludedIds.includes(m.id);
                   return (
                     <label
@@ -442,10 +453,10 @@ export default function SharePage() {
                           className="rounded border-[#d6ded5] text-rose-600 focus:ring-rose-500"
                         />
                         <span className={isExcluded ? 'line-through text-[#859088]' : 'font-medium text-[#1c2420]'}>
-                          {m.name} ({m.dosage || 'dose unspecified'})
+                          {m.label}
                         </span>
                       </div>
-                      <span className="text-[10px] text-[#6e7771] uppercase">Medicine</span>
+                      <span className="text-[10px] text-[#6e7771] uppercase">{m.type}</span>
                     </label>
                   );
                 })}
@@ -496,9 +507,9 @@ export default function SharePage() {
             </div>
 
             {/* Withheld notice */}
-            {excludedIds.length > 0 && (
+            {preview && preview.withheldCount > 0 && (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900 font-medium">
-                ⚠️ {excludedIds.length} item(s) withheld by patient from this summary.
+                ⚠️ {preview.withheldCount} item(s) withheld by patient from this summary.
               </div>
             )}
 
@@ -513,9 +524,9 @@ export default function SharePage() {
                   </span>
                 </div>
                 {selectedSections.includes('allergies') ? (
-                  currentRecord?.allergies && currentRecord.allergies.length > 0 ? (
+                  preview && preview.allergies.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
-                      {currentRecord.allergies.map((a) => (
+                      {preview.allergies.map((a) => (
                         <span
                           key={a.id}
                           className="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-800 border border-rose-200"
@@ -525,7 +536,7 @@ export default function SharePage() {
                       ))}
                     </div>
                   ) : (
-                    <span className="text-[10px] text-[#6e7771] italic">No allergies documented</span>
+                    <span className="text-[10px] text-[#6e7771] italic">{preview?.allergyStatus === 'none-known' ? 'No known allergies' : 'Allergy status unknown or withheld'}</span>
                   )
                 ) : (
                   <span className="text-[10px] text-[#a0aaa3] italic">Allergies section excluded by patient</span>
@@ -570,16 +581,13 @@ export default function SharePage() {
                     <span className="text-[10px] text-[#2b8a7e]">Included</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                    <div className="rounded-md bg-[#eef8f4] p-1.5 border border-[#cbe2da]">
-                      <span className="text-[#6e7771] block">HbA1c (Sep 2026)</span>
-                      <strong className="text-[#14382f] font-mono text-xs">7.6 %</strong>
-                      <span className="text-[9px] text-emerald-700 block">↓ Down from 8.4%</span>
-                    </div>
-                    <div className="rounded-md bg-[#eef8f4] p-1.5 border border-[#cbe2da]">
-                      <span className="text-[#6e7771] block">TSH (Sep 2026)</span>
-                      <strong className="text-[#14382f] font-mono text-xs">3.1 µIU/mL</strong>
-                      <span className="text-[9px] text-emerald-700 block">Normal range</span>
-                    </div>
+                    {preview?.labs.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4).map((lab) => (
+                      <div key={lab.id} className="rounded-md bg-[#eef8f4] p-1.5 border border-[#cbe2da]">
+                        <span className="text-[#6e7771] block">{lab.test} ({lab.date})</span>
+                        <strong className="text-[#14382f] font-mono text-xs">{lab.value} {lab.unit}</strong>
+                      </div>
+                    ))}
+                    {preview?.labs.length === 0 && <span>No lab results included</span>}
                   </div>
                 </div>
               )}

@@ -34,9 +34,12 @@ function ShareViewerContent({
   const [payload, setPayload] = useState<SharePayload | null>(null);
 
   useEffect(() => {
+    let loadVersion = 0;
     async function loadAndDecrypt() {
+      const version = ++loadVersion;
       setLoading(true);
       setError(null);
+      setPayload(null);
 
       // 1. Extract decryption key from #k=
       const hash = window.location.hash;
@@ -46,13 +49,21 @@ function ShareViewerContent({
         setLoading(false);
         return;
       }
-      const keyBase64Url = decodeURIComponent(kMatch[1]);
+      let keyBase64Url: string;
+      try {
+        keyBase64Url = decodeURIComponent(kMatch[1]);
+      } catch {
+        setError('corrupted');
+        setLoading(false);
+        return;
+      }
 
       try {
         // 2. Fetch ciphertext from server
         const res = await fetch(`/api/shares/${id}`, {
           cache: 'no-store',
         });
+        if (version !== loadVersion) return;
 
         if (res.status === 410) {
           setError('revoked');
@@ -73,25 +84,34 @@ function ShareViewerContent({
         }
 
         const data = await res.json();
+        if (version !== loadVersion) return;
         const { ciphertext, iv } = data;
 
         // 3. Decrypt in the browser
         try {
           const decrypted = await decryptPayload(ciphertext, iv, keyBase64Url);
+          if (version !== loadVersion) return;
           setPayload(decrypted);
         } catch (decryptErr) {
+          if (version !== loadVersion) return;
           console.error('Decryption failed:', decryptErr);
           setError('corrupted');
         }
       } catch (networkErr) {
+        if (version !== loadVersion) return;
         console.error('Network request failed:', networkErr);
         setError('network');
       } finally {
-        setLoading(false);
+        if (version === loadVersion) setLoading(false);
       }
     }
 
     loadAndDecrypt();
+    window.addEventListener('hashchange', loadAndDecrypt);
+    return () => {
+      loadVersion++;
+      window.removeEventListener('hashchange', loadAndDecrypt);
+    };
   }, [id]);
 
   if (loading) {

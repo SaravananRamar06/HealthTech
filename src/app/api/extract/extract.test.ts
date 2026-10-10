@@ -1,7 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { POST as extractRoute } from './route';
 
 describe('Extract API Route', () => {
+  it('does not replace an unknown upload with unrelated cached medical facts', async () => {
+    vi.stubEnv('GEMINI_API_KEY', '');
+    try {
+      const formData = new FormData();
+      formData.append('file', new File(['synthetic'], 'unrelated-report.pdf', { type: 'application/pdf' }));
+      const res = await extractRoute(new Request('http://localhost:3000/api/extract', { method: 'POST', body: formData }));
+      expect(res.status).toBe(502);
+      expect(await res.json()).not.toHaveProperty('items');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
   it('returns cached demo extraction when demoDocId is provided', async () => {
     const formData = new FormData();
     formData.append('demoDocId', 'doc_01');

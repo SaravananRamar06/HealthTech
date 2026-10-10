@@ -53,6 +53,7 @@ export function buildSharePayload(
 ): SharePayload {
   const excludedSet = new Set(selection.excludedIds || []);
   const sectionsSet = new Set(selection.sections || []);
+  const sharedAllergyStatus = sectionsSet.has('allergies') && !(record.allergies || []).some((allergy) => excludedSet.has(allergy.id)) ? record.allergyStatus : 'unknown';
 
   const totalRecordItems =
     (record.allergies?.length || 0) +
@@ -122,7 +123,7 @@ export function buildSharePayload(
     version: 1,
     isDemo: record.isDemo,
     profile: record.profile,
-    allergyStatus: sectionsSet.has('allergies') ? record.allergyStatus : 'unknown',
+    allergyStatus: sharedAllergyStatus,
     allergies: sharedAllergies,
     conditions: sharedConditions,
     medications: sharedMedications,
@@ -146,7 +147,7 @@ export function buildSharePayload(
       sex: record.profile.sex,
       emergencyContact,
     },
-    allergyStatus: sectionsSet.has('allergies') ? record.allergyStatus : 'unknown',
+    allergyStatus: sharedAllergyStatus,
     allergies: sharedAllergies,
     conditions: sharedConditions,
     medications: sharedMedications,

@@ -179,6 +179,78 @@ export interface ShareRecord {
   revokedAt: string | null;
 }
 
+// Restored AI contracts. Integration maintained by P1 for this bug-fix pass.
+export interface RecordCitation {
+  id: string;
+  itemType: 'medication' | 'allergy' | 'condition' | 'lab' | 'event' | 'document';
+  title: string;
+  date?: string | null;
+  excerpt?: string | null;
+  confidence?: Confidence;
+  provenanceKind: 'patient-reported' | 'document';
+}
+
+export interface AIChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  citations?: RecordCitation[];
+  uncertainty?: boolean;
+  mode?: 'gemini' | 'local';
+  isError?: boolean;
+}
+
+export interface GeneratedClinicalBrief {
+  patientProfile: string;
+  activeConditions: string[];
+  currentMedications: string[];
+  historicalMedications: string[];
+  allergiesAndReactions: string[];
+  recentLabResults: string[];
+  proceduresAndCareEvents: string[];
+  conflictsAndUnverifiedInfo: string[];
+  sources: string[];
+  generatedAt: string;
+  isReviewed: boolean;
+}
+
+export interface AppointmentPrepSheet {
+  appointmentPurpose: string;
+  patientReportedSymptoms: string[];
+  questionsToAsk: string[];
+  relevantDocumentedHistory: string[];
+  selectedMedications: string[];
+  selectedAllergies: string[];
+  relevantHistoricalLabs: string[];
+  clarificationItems: string[];
+  createdAt: string;
+  notes?: string;
+}
+
+export interface ReconciliationFinding {
+  id: string;
+  type: 'duplicate-ingredient' | 'conflicting-strength' | 'outdated-medication' | 'lab-discordance' | 'unconfirmed-allergy' | 'demographic-inconsistency';
+  severity: 'high' | 'medium' | 'low';
+  title: string;
+  explanation: string;
+  records: { id: string; label: string; value: string; source: string; date: string | null }[];
+  suggestedResolution: string;
+  status: 'unresolved' | 'resolved';
+  resolutionAction?: 'marked-stopped' | 'confirmed-both' | 'dismissed';
+}
+
+export interface RecordQualityIssue {
+  id: string;
+  category: 'missing-date' | 'missing-unit' | 'incomplete-dosage' | 'unclear-status' | 'unreviewed-extraction' | 'stale-entry';
+  severity: 'warning' | 'info';
+  title: string;
+  detail: string;
+  itemId: string;
+  itemType: RecordCitation['itemType'];
+  status: 'pending' | 'resolved';
+}
+
 // Function contracts (implementations live in the owners' files):
 //   analyzeRecord(r: PatientRecord, today: ISODate): Flag[]                          P4 · src/lib/analyze.ts
 //   buildSharePayload(r: PatientRecord, s: ShareSelection, now: Date): SharePayload  P3 · src/lib/share/payload.ts

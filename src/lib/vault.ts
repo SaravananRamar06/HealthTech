@@ -14,6 +14,7 @@ import type {
   LabResult,
   CareEvent,
   SourceDocument,
+  ShareRecord,
   ExtractedItem,
   Provenance,
 } from '@/lib/types';
@@ -154,15 +155,12 @@ export const useVault = create<VaultState>()(
           }
         }
 
-        const existingDocs = state.record.documents || [];
-        const filtered = existingDocs.filter((d) => d.id !== doc.id);
-
-        set({
+        set((latest) => latest.record ? {
           record: {
-            ...state.record,
-            documents: [...filtered, doc],
+            ...latest.record,
+            documents: [...latest.record.documents.filter((d) => d.id !== doc.id), doc],
           },
-        });
+        } : {});
       },
 
       queueForReview: (items: ExtractedItem[]) => {
@@ -172,7 +170,9 @@ export const useVault = create<VaultState>()(
         set({
           record: {
             ...state.record,
-            pendingReview: [...(state.record.pendingReview || []), ...items],
+            pendingReview: Array.from(new Map(
+              [...(state.record.pendingReview || []), ...items].map((item) => [item.tempId, item])
+            ).values()),
           },
         });
       },
@@ -393,15 +393,26 @@ export const useVault = create<VaultState>()(
 
       deleteAllData: async () => {
         if (typeof window !== 'undefined') {
-          try {
-            localStorage.removeItem('handover-vault');
-            localStorage.removeItem('handover-shares');
-            await idbClear();
-          } catch (e) {
-            console.warn('Error clearing browser storage:', e);
+          const shares: ShareRecord[] = JSON.parse(localStorage.getItem('handover-shares') || '[]');
+          const revocations = await Promise.allSettled(shares.filter((share) => !share.revokedAt && Date.parse(share.expiresAt) > Date.now()).map(async (share) => {
+            const response = await fetch(`/api/shares/${share.id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${share.manageToken}` },
+              signal: AbortSignal.timeout(15_000),
+            });
+            if (!response.ok && response.status !== 404 && response.status !== 410) {
+              throw new Error('Share revocation failed');
+            }
+          }));
+          if (revocations.some((result) => result.status === 'rejected')) {
+            throw new Error('Could not revoke all shares. Your data and management tokens have been kept; please retry.');
           }
+          await idbClear();
+          localStorage.removeItem('handover-shares');
+          window.dispatchEvent(new Event('handover-shares-change'));
         }
         set({ record: null });
+        useVault.persist.clearStorage();
       },
     }),
     {

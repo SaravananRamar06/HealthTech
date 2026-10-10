@@ -1,5 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useVault } from './vault';
+import { set as idbSet, clear as idbClear } from 'idb-keyval';
+
+vi.mock('idb-keyval', () => ({ set: vi.fn(async () => {}), clear: vi.fn(async () => {}) }));
 
 describe('useVault store & interactive operations', () => {
   beforeEach(async () => {
@@ -106,5 +109,65 @@ describe('useVault store & interactive operations', () => {
     expect(
       useVault.getState().record!.medications.some((m) => m.id === targetMed.id)
     ).toBe(false);
+  });
+  it('does not lose a pending fact when the same extraction is queued twice', () => {
+    useVault.getState().loadDemo('start');
+    const item = { tempId: 'synthetic_fact', documentId: 'synthetic_doc', excerpt: 'Synthetic allergy', confidence: 'high' as const, type: 'allergy' as const, data: { substance: 'Synthetic allergen', reaction: null } };
+    useVault.getState().queueForReview([item]);
+    useVault.getState().queueForReview([item]);
+    expect(useVault.getState().record?.pendingReview).toHaveLength(1);
+    useVault.getState().acceptItem(item.tempId);
+    expect(useVault.getState().record?.allergies).toHaveLength(1);
+  });
+
+  it('keeps record changes made while a document file is being saved', async () => {
+    useVault.getState().loadDemo('start');
+    let finishSave!: () => void;
+    vi.mocked(idbSet).mockImplementationOnce(() => new Promise<void>((resolve) => { finishSave = resolve; }));
+    vi.stubGlobal('window', {});
+    try {
+      const saving = useVault.getState().addDocument({ id: 'doc_async', title: 'Synthetic document', docType: 'other', date: null, facility: null, clinician: null, fileRef: 'idb:doc_async' }, new Blob(['synthetic']));
+      useVault.getState().addPatientReportedItem('condition', { name: 'Synthetic condition' });
+      finishSave();
+      await saving;
+      expect(useVault.getState().record?.conditions.some((condition) => condition.name === 'Synthetic condition')).toBe(true);
+      expect(useVault.getState().record?.documents.some((doc) => doc.id === 'doc_async')).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('retains management tokens and the vault when share revocation fails', async () => {
+    useVault.getState().loadDemo('start');
+    const storage = { getItem: vi.fn(() => JSON.stringify([{ id: 'synthetic_share', manageToken: 'test-token', revokedAt: null, expiresAt: new Date(Date.now() + 60_000).toISOString() }])), removeItem: vi.fn() };
+    vi.stubGlobal('window', { dispatchEvent: vi.fn() });
+    vi.stubGlobal('localStorage', storage);
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 500 })));
+    try {
+      await expect(useVault.getState().deleteAllData()).rejects.toThrow('Could not revoke all shares');
+      expect(storage.removeItem).not.toHaveBeenCalled();
+      expect(useVault.getState().record).not.toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('revokes active shares before clearing local data', async () => {
+    useVault.getState().loadDemo('start');
+    const storage = { getItem: vi.fn(() => JSON.stringify([{ id: 'synthetic_share', manageToken: 'test-token', revokedAt: null, expiresAt: new Date(Date.now() + 60_000).toISOString() }, { id: 'expired_share', manageToken: 'expired-token', revokedAt: null, expiresAt: '2000-01-01T00:00:00Z' }])), removeItem: vi.fn() };
+    const revoke = vi.fn(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal('window', { dispatchEvent: vi.fn() });
+    vi.stubGlobal('localStorage', storage);
+    vi.stubGlobal('fetch', revoke);
+    try {
+      await useVault.getState().deleteAllData();
+      expect(revoke).toHaveBeenCalledWith('/api/shares/synthetic_share', expect.objectContaining({ method: 'DELETE', headers: { Authorization: 'Bearer test-token' } }));
+      expect(revoke).toHaveBeenCalledTimes(1);
+      expect(idbClear).toHaveBeenCalled();
+      expect(storage.removeItem).toHaveBeenCalledWith('handover-shares');
+      expect(useVault.getState().record).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

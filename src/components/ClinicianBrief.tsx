@@ -176,7 +176,7 @@ export default function ClinicianBrief({ payload }: { payload: SharePayload }) {
           <span>⚠️ Allergies &amp; Adverse Drug Reactions</span>
           <span className="text-xs font-normal text-rose-700">Priority Clinical Scan</span>
         </h2>
-        <AllergyList allergies={filtered.allergies} status={allergyStatus} readOnly={true} />
+        {filtered.isFiltered && filtered.allergies.length === 0 ? <p className="text-sm text-[#6e7771]">No allergies match this search. Clear the filter to see the shared allergy history.</p> : <AllergyList allergies={filtered.allergies} status={allergyStatus} readOnly={true} />}
       </section>
 
       {/* 2. Reconciliation & Safety Flags */}

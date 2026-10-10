@@ -5,10 +5,17 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useVault } from '@/lib/vault';
 import { analyzeRecord } from '@/lib/analyze';
 import { useIsMounted } from '@/lib/useIsMounted';
 import { useToast } from '@/components/ui/Toast';
+import { AskCareBridgeDrawer } from '@/components/ai/AskCareBridgeDrawer';
+import { ClinicalBriefModal } from '@/components/ai/ClinicalBriefModal';
+import { AppointmentPrepModal } from '@/components/ai/AppointmentPrepModal';
+import { AIConsentModal } from '@/components/ai/AIConsentModal';
+import { ReconciliationPanel } from '@/components/ai/ReconciliationPanel';
+import { RecordQualityPanel } from '@/components/ai/RecordQualityPanel';
 import {
   AllergyList,
   ConditionList,
@@ -40,6 +47,7 @@ import {
 } from 'lucide-react';
 
 export default function VaultPage() {
+  const router = useRouter();
   const mounted = useIsMounted();
   const { showToast } = useToast();
 
@@ -47,6 +55,11 @@ export default function VaultPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'medications' | 'allergies' | 'conditions' | 'labs' | 'timeline'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'name' | 'newest'>('default');
+  const [showAskAssistant, setShowAskAssistant] = useState(false);
+  const [showClinicalBrief, setShowClinicalBrief] = useState(false);
+  const [showAppointmentPrep, setShowAppointmentPrep] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [aiMode, setAiMode] = useState<'gemini' | 'local'>('local');
 
   // Add Item State
   const [showAddForm, setShowAddForm] = useState(false);
@@ -286,7 +299,7 @@ export default function VaultPage() {
       <main className="mx-auto flex min-h-[60vh] max-w-5xl items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#14382f] border-t-transparent" />
-          <p className="text-sm font-medium text-[#525d56]">Accessing local encrypted vault...</p>
+          <p className="text-sm font-medium text-[#525d56]">Accessing local vault...</p>
         </div>
       </main>
     );
@@ -370,7 +383,7 @@ export default function VaultPage() {
                     <span className="rounded-md bg-[#ddf2e8] px-2 py-0.5 text-xs font-bold text-[#14382f]">
                       PATIENT VAULT
                     </span>
-                    <span className="text-xs text-[#6e7771]">Encrypted on device</span>
+                    <span className="text-xs text-[#6e7771]">Stored in this browser</span>
                   </div>
                   <div className="flex items-center gap-2.5 mt-1">
                     <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14382f]">
@@ -399,6 +412,10 @@ export default function VaultPage() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => setShowAskAssistant(true)} className="rounded-xl border border-[#d6ded5] bg-white px-3 py-2.5 text-xs font-bold text-[#14382f]">Ask Assistant</button>
+                <button type="button" onClick={() => setShowClinicalBrief(true)} className="rounded-xl border border-[#d6ded5] bg-white px-3 py-2.5 text-xs font-bold text-[#14382f]">Clinical Brief</button>
+                <button type="button" onClick={() => setShowAppointmentPrep(true)} className="rounded-xl border border-[#d6ded5] bg-white px-3 py-2.5 text-xs font-bold text-[#14382f]">Appointment Prep</button>
+                <button type="button" onClick={() => setShowConsentModal(true)} className="rounded-xl border border-[#d6ded5] bg-white px-3 py-2.5 text-xs font-bold text-[#14382f]">AI: {aiMode === 'local' ? 'Local' : 'Gemini'}</button>
                 <Link
                   href="/vault/import"
                   className="relative inline-flex items-center gap-1.5 rounded-xl bg-[#14382f] px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#1a473c] transition-all"
@@ -448,10 +465,14 @@ export default function VaultPage() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    if (confirm('Delete all stored health records and shares from this browser?')) {
-                      deleteAllData();
-                      showToast('All browser storage wiped', 'info');
+                  onClick={async () => {
+                    if (confirm('Revoke all shares and delete all stored health records from this browser?')) {
+                      try {
+                        await deleteAllData();
+                        showToast('All shares revoked and browser storage wiped', 'info');
+                      } catch {
+                        showToast('Could not revoke all shares or clear storage. Data kept; please retry.', 'error');
+                      }
                     }
                   }}
                   className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-white px-2.5 py-2.5 text-xs text-rose-700 hover:bg-rose-50 transition-all"
@@ -913,7 +934,7 @@ export default function VaultPage() {
                 id: 'allergies',
                 label: 'Allergies',
                 count: record.allergies.length,
-                subtext: record.allergyStatus === 'has-allergies' ? 'has allergies' : 'none known',
+                subtext: record.allergyStatus === 'has-allergies' ? 'has allergies' : record.allergyStatus === 'none-known' ? 'none known' : 'status unknown',
                 icon: ShieldAlert,
                 color: 'text-rose-700',
               },
@@ -1064,7 +1085,7 @@ export default function VaultPage() {
           )}
 
           {/* 1. Allergies Section */}
-          {(activeTab === 'all' || activeTab === 'allergies') && filteredData && (
+          {(activeTab === 'all' || activeTab === 'allergies') && filteredData && (!searchQuery.trim() || filteredData.allergies.length > 0) && (
             <section className="glass-panel rounded-2xl p-6 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-[#eef2ec] pb-3">
                 <h2 className="text-base font-bold text-[#14382f]">
@@ -1195,7 +1216,7 @@ export default function VaultPage() {
                 {record.documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="flex flex-col justify-between rounded-xl border border-[#e2e7e0] bg-white p-4 shadow-2xs hover:border-[#b8c9bf] transition-all"
+                    className="flex min-w-0 flex-col justify-between rounded-xl border border-[#e2e7e0] bg-white p-4 shadow-2xs hover:border-[#b8c9bf] transition-all"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2">
@@ -1217,6 +1238,14 @@ export default function VaultPage() {
           </section>
         </>
       )}
+      {record && <>
+        <section className="glass-panel rounded-2xl p-6"><ReconciliationPanel record={record} onUpdateMedicationStatus={(id, status) => updateItem(id, { status })} /></section>
+        <section className="glass-panel rounded-2xl p-6"><RecordQualityPanel record={record} /></section>
+        {showAskAssistant && <AskCareBridgeDrawer isOpen onClose={() => setShowAskAssistant(false)} record={record} aiMode={aiMode} onOpenConsent={() => setShowConsentModal(true)} />}
+        {showClinicalBrief && <ClinicalBriefModal isOpen onClose={() => setShowClinicalBrief(false)} record={record} aiMode={aiMode} onNavigateToShare={() => { setShowClinicalBrief(false); router.push('/vault/share'); }} />}
+        {showAppointmentPrep && <AppointmentPrepModal isOpen onClose={() => setShowAppointmentPrep(false)} record={record} aiMode={aiMode} />}
+      </>}
+      {showConsentModal && <AIConsentModal isOpen onClose={() => setShowConsentModal(false)} currentMode={aiMode} onConsent={setAiMode} />}
     </main>
   );
 }

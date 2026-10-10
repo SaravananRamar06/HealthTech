@@ -32,7 +32,7 @@ export function Navigation() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#e2e7e0]/80 bg-[#f8f9f5]/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex min-h-16 max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6 sm:py-0">
         {/* Brand */}
         <Link href="/" className="group flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#14382f] text-[#ddf2e8] shadow-xs group-hover:scale-105 transition-transform duration-200">
@@ -48,7 +48,7 @@ export function Navigation() {
         </Link>
 
         {/* Navigation items */}
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="order-3 flex w-full items-center justify-between gap-1 sm:order-none sm:w-auto sm:gap-2">
           {navLinks.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;

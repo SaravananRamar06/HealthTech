@@ -175,23 +175,23 @@ export async function POST(request: Request) {
       }
     }
 
-    // 4. Fallback to demo cache by matching filename or default to doc_01
+    // 4. Cached results are available only for explicitly named bundled samples.
     const filename = file.name.toLowerCase();
-    let matchedDemoId = 'doc_01';
-    const sampleMatch = filename.match(/doc_0([1-5])/);
-    if (sampleMatch) {
-      matchedDemoId = `doc_0${sampleMatch[1]}`;
-    } else if (filename.includes('04') || filename.includes('menon') || filename.includes('dia')) {
-      matchedDemoId = 'doc_04';
-    } else if (filename.includes('02') || filename.includes('rx') || filename.includes('iyer')) {
-      matchedDemoId = 'doc_02';
-    } else if (filename.includes('03') || filename.includes('apr') || (filename.includes('lab') && filename.includes('pdf'))) {
-      matchedDemoId = 'doc_03';
-    } else if (filename.includes('05') || filename.includes('sep') || filename.includes('recent')) {
-      matchedDemoId = 'doc_05';
+    const sampleFiles: Record<string, string> = {
+      'doc_01_discharge.pdf': 'doc_01',
+      'doc_02_gp_rx.jpg': 'doc_02',
+      'doc_03_labs.pdf': 'doc_03',
+      'doc_04_dia_rx.jpg': 'doc_04',
+      'doc_05_labs.jpg': 'doc_05',
+    };
+    const matchedDemoId = sampleFiles[filename];
+    if (!matchedDemoId) {
+      return NextResponse.json(
+        { error: 'Live extraction is unavailable for this document. Use bundled samples or add patient-reported items manually.' },
+        { status: 502 }
+      );
     }
-
-    const fallbackResult = DEMO_EXTRACTIONS[matchedDemoId] || DEMO_EXTRACTIONS['doc_01'];
+    const fallbackResult = DEMO_EXTRACTIONS[matchedDemoId];
     return NextResponse.json({
       ...fallbackResult,
       items: fallbackResult.items.map((item) => ({

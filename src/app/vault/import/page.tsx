@@ -19,6 +19,16 @@ import {
   Loader2,
 } from 'lucide-react';
 
+async function processDocuments<T, U>(documents: T[], process: (document: T, index: number) => Promise<U>) {
+  const results: PromiseSettledResult<U>[] = [];
+  for (let index = 0; index < documents.length; index += 2) {
+    results.push(...await Promise.allSettled(
+      documents.slice(index, index + 2).map((document, offset) => process(document, index + offset))
+    ));
+  }
+  return results;
+}
+
 export default function ImportPage() {
   const mounted = useIsMounted();
   const {
@@ -62,11 +72,11 @@ export default function ImportPage() {
     }
 
     setImporting(true);
-    setStatusMessage(`Processing ${files.length} document(s) concurrently...`);
+    setStatusMessage(`Processing ${files.length} document(s), at most two at a time...`);
 
     try {
       const fileList = Array.from(files);
-      const promises = fileList.map(async (file, i) => {
+      const settled = await processDocuments(fileList, async (file, i) => {
         const formData = new FormData();
         formData.append('file', file);
         const docId = `doc_${Date.now()}_${i}`;
@@ -75,6 +85,7 @@ export default function ImportPage() {
         const res = await fetch('/api/extract', {
           method: 'POST',
           body: formData,
+          signal: AbortSignal.timeout(45_000),
         });
 
         if (!res.ok) {
@@ -93,10 +104,9 @@ export default function ImportPage() {
           fileRef: `idb:${docId}`,
         };
 
-        return { sourceDoc, items: result.items, file };
+        return { sourceDoc, items: result.items, file, mode: result.mode };
       });
 
-      const settled = await Promise.allSettled(promises);
       const successfulDocs: { doc: SourceDocument; file: File }[] = [];
       const successfulItems: ExtractedItem[] = [];
 
@@ -116,7 +126,9 @@ export default function ImportPage() {
         queueForReview(successfulItems);
       }
 
-      setStatusMessage(`Extraction complete (${successfulDocs.length} documents)! Please review each item below.`);
+      const cachedCount = settled.filter((result) => result.status === 'fulfilled' && result.value.mode === 'cached-demo').length;
+      const failedCount = fileList.length - successfulDocs.length;
+      setStatusMessage(`${successfulDocs.length} document(s) processed (${cachedCount} cached demo). ${failedCount ? `${failedCount} failed; use bundled samples or manual entry. ` : ''}Review extracted items below.`);
     } catch (err) {
       console.error('Import error:', err);
       setStatusMessage('Error during extraction. Please try again.');
@@ -137,18 +149,18 @@ export default function ImportPage() {
     }
 
     setImporting(true);
-    setStatusMessage('Importing 5 sample demo documents in parallel...');
+    setStatusMessage('Loading cached extraction for the synthetic sample documents...');
 
     const sampleDocs = [
-      { id: 'doc_01', name: 'Discharge Summary (Jan 2025)' },
-      { id: 'doc_02', name: 'GP Prescription - Dr. A. Iyer (Mar 2026)' },
-      { id: 'doc_03', name: 'Lab Report - Blood Tests (Apr 2026)' },
-      { id: 'doc_04', name: 'Specialist Prescription - Dr. R. Menon (Jul 2026)' },
-      { id: 'doc_05', name: 'Follow-up Lab Report (Sep 2026)' },
-    ];
+      { id: 'doc_01', name: 'Discharge Summary (Jan 2025)', file: 'doc_01_discharge.pdf' },
+      { id: 'doc_02', name: 'GP Prescription - Dr. A. Iyer (Mar 2026)', file: 'doc_02_gp_rx.jpg' },
+      { id: 'doc_03', name: 'Lab Report - Blood Tests (Apr 2026)', file: 'doc_03_labs.pdf' },
+      { id: 'doc_04', name: 'Specialist Prescription - Dr. R. Menon (Jul 2026)', file: 'doc_04_dia_rx.jpg' },
+      { id: 'doc_05', name: 'Follow-up Lab Report (Sep 2026)', file: 'doc_05_labs.jpg' },
+    ].filter((sample) => !useVault.getState().record?.documents.some((doc) => doc.id === sample.id));
 
     try {
-      const promises = sampleDocs.map(async (sample) => {
+      const settled = await processDocuments(sampleDocs, async (sample) => {
         const formData = new FormData();
         formData.append('demoDocId', sample.id);
         formData.append('documentId', sample.id);
@@ -156,6 +168,7 @@ export default function ImportPage() {
         const res = await fetch('/api/extract', {
           method: 'POST',
           body: formData,
+          signal: AbortSignal.timeout(45_000),
         });
 
         if (!res.ok) {
@@ -171,13 +184,12 @@ export default function ImportPage() {
           date: result.document.date,
           facility: result.document.facility,
           clinician: result.document.clinician,
-          fileRef: `/demo/${sample.id}`,
+          fileRef: `/demo/${sample.file}`,
         };
 
         return { sourceDoc, items: result.items };
       });
 
-      const settled = await Promise.allSettled(promises);
       const successfulDocs: SourceDocument[] = [];
       const successfulItems: ExtractedItem[] = [];
 
@@ -197,7 +209,7 @@ export default function ImportPage() {
         queueForReview(successfulItems);
       }
 
-      setStatusMessage(`All ${successfulDocs.length} sample documents extracted! Review items below.`);
+      setStatusMessage(sampleDocs.length === 0 ? 'Sample documents are already imported. Review the existing queue below.' : `${successfulDocs.length} sample documents loaded using cached demo extraction. ${sampleDocs.length - successfulDocs.length} failed. Review items below.`);
     } catch (err) {
       console.error('Sample import error:', err);
       setStatusMessage('Error loading samples.');
@@ -298,7 +310,7 @@ export default function ImportPage() {
               <UploadCloud className="h-5 w-5 text-[#2b8a7e]" />
             </div>
             <p className="text-xs font-bold text-[#14382f]">Upload Prescriptions or Reports</p>
-            <p className="text-[11px] text-[#6e7771] mt-0.5 mb-3">JPEG, PNG, WebP or PDF (≤4.5 MB)</p>
+            <p className="text-[11px] text-[#6e7771] mt-0.5 mb-3">JPEG, PNG, WebP or PDF (≤4 MB)</p>
             <button
               type="button"
               disabled={importing}
@@ -397,6 +409,7 @@ export default function ImportPage() {
                       <span className="rounded-md bg-[#e5eae3] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#14382f]">
                         {item.type}
                       </span>
+                      <span className="text-[10px] text-[#525d56]">AI-extracted · awaiting review</span>
                       <span
                         className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
                           item.confidence === 'high'
